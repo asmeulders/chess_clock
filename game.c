@@ -1,5 +1,6 @@
 // System Imports
 #include <stdio.h>
+#include <stdlib.h>
 
 // Project Imports
 #include "players.h"
@@ -7,6 +8,7 @@
 typedef struct {
     Player *p1;
     Player *p2;
+    int duration;
 } Game;
 
 Game* create_game(int duration) {
@@ -16,6 +18,7 @@ Game* create_game(int duration) {
     Game *g = malloc(sizeof(Game));
     g->p1 = p1;
     g->p2 = p2;
+    g->duration = duration;
 }
 
 void destroy_game(Game *g) {
@@ -34,4 +37,28 @@ void start_game() {
 void stop_game() {
   // stops clock
   // both players are not active
+}
+
+Player* get_player(Game *g, int id) {
+    Player *p = NULL;
+
+    switch (id)
+    {
+    case 1:
+        p = g->p1;
+        break;
+    
+    case 2:
+        p = g->p2;
+        break;
+    default:
+        printf("Invalid id: %d", id);
+        break;
+    }
+
+    return p;
+}
+
+int get_duration(Game *g) {
+    return g->duration;
 }

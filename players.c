@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <time.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "players.h"
 
@@ -12,12 +13,12 @@ typedef struct {
 
 Player* create_player(int game_duration) {
     struct timespec duration = { .tv_sec = game_duration, .tv_nsec = 0 };
-    Player *p = {false, duration};
+    Player *p = {duration, false};
 }
 
 void destroy_player(Player *p) {
     if (p == NULL) return;
-    
+
     free(p);
 }
 

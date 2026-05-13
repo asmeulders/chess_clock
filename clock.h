@@ -5,6 +5,7 @@
 
 void start_clock();
 void stop_clock();
+void clear_clock();
 
 
 #endif

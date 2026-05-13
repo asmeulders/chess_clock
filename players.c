@@ -5,14 +5,20 @@
 
 #include "players.h"
 
-struct Player {
+typedef struct {
     struct timespec time_remaining;
     bool is_active;
-};
+} Player;
 
 Player* create_player(int game_duration) {
     struct timespec duration = { .tv_sec = game_duration, .tv_nsec = 0 };
     Player *p = {false, duration};
+}
+
+void destroy_player(Player *p) {
+    if (p == NULL) return;
+    
+    free(p);
 }
 
 bool is_active(Player *p) {

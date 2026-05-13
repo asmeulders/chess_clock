@@ -6,14 +6,18 @@
 
 #include "players.h"
 
-typedef struct {
+struct Player {
     struct timespec time_remaining;
     bool is_active;
-} Player;
+};
 
-Player* create_player(int game_duration) {
-    struct timespec duration = { .tv_sec = game_duration, .tv_nsec = 0 };
-    Player *p = {duration, false};
+Player *create_player(int game_duration) {
+    struct timespec t = {game_duration, 0};
+    
+    Player *p = malloc(sizeof(Player));
+    p->time_remaining = t;
+    p->is_active = false;
+    return p;
 }
 
 void destroy_player(Player *p) {

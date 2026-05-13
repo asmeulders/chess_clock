@@ -4,14 +4,15 @@
 
 // Project Imports
 #include "players.h"
+#include "game.h"
 
-typedef struct {
+struct Game {
     Player *p1;
     Player *p2;
     int duration;
-} Game;
+};
 
-Game* create_game(int duration) {
+Game *create_game(int duration) {
     Player *p1 = create_player(duration);
     Player *p2 = create_player(duration);
 
@@ -39,7 +40,7 @@ void stop_game() {
   // both players are not active
 }
 
-Player* get_player(Game *g, int id) {
+Player *get_player(Game *g, int id) {
     Player *p = NULL;
 
     switch (id)
@@ -52,7 +53,7 @@ Player* get_player(Game *g, int id) {
         p = g->p2;
         break;
     default:
-        printf("Invalid id: %d", id);
+        printf("Invalid id: %d\n", id);
         break;
     }
 

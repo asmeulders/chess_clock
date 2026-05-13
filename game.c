@@ -29,15 +29,17 @@ void destroy_game(Game *g) {
     free(g);
 }
 
-void start_game() {
-  // create players
-  // find out game length
-  // start clock
+void start_game(Game *g) {
+    // activate player 1
+    set_active(g->p1, true);
+    // start clock
 }
 
-void stop_game() {
-  // stops clock
-  // both players are not active
+void stop_game(Game *g) {
+    // deactivate both players
+    set_active(g->p1, false);
+    set_active(g->p2, false);
+    // stops clock
 }
 
 Player *get_player(Game *g, int id) {
@@ -62,4 +64,15 @@ Player *get_player(Game *g, int id) {
 
 int get_duration(Game *g) {
     return g->duration;
+}
+
+void end_turn(Game *g) {
+    Player *p1 = get_player(g, 1);
+    Player *p2 = get_player(g, 2);
+    if (is_active(p1) != is_active(p2)) {
+        set_active(p1, !is_active(p1));
+        set_active(p2, !is_active(p2));
+    } else {
+        printf("Game has not started yet.\n");
+    }
 }

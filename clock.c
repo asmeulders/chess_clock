@@ -12,7 +12,7 @@ struct Clock {
     struct timespec turn_start;
 };
 
-Clock *make_clock() {
+Clock *create_clock() {
     Clock *c = malloc(sizeof(Clock));
     return c;
 }
@@ -22,7 +22,8 @@ void destroy_clock(Clock *c) {
 }
 
 void start_clock(Clock *c) {
-
+    set_game_start(c, NULL);
+    set_turn_start(c, NULL);
 }
 
 void stop_clock(Clock *c) {
@@ -31,4 +32,31 @@ void stop_clock(Clock *c) {
 
 void clear_clock(Clock *c) {
     // reset everything to 0
+    struct timespec zero = { 0, 0 };
+    c->game_start = zero;
+    c->turn_start = zero;
+}
+
+void set_game_start(Clock *c, struct timespec *time) {
+    if (time != NULL) {
+        c->game_start = *time;
+    } else {
+        clock_gettime(CLOCK_MONOTONIC, &c->game_start);
+    }
+}
+
+void set_turn_start(Clock *c, struct timespec *time) {
+    if (time != NULL) {
+        c->turn_start = *time;
+    } else {
+        clock_gettime(CLOCK_MONOTONIC, &c->turn_start);
+    }
+}
+
+struct timespec get_game_start(Clock *c) {
+    return c->game_start;
+}
+
+struct timespec get_turn_start(Clock *c) {
+    return c->turn_start;
 }

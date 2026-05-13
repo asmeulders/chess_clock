@@ -8,12 +8,14 @@
 #include "clock.h"
 
 struct Game {
+    Clock *c;
     Player *p1;
     Player *p2;
     int duration;
 };
 
 Game *create_game(int duration) {
+    Clock *c = create_clock();
     Player *p1 = create_player(duration);
     Player *p2 = create_player(duration);
 
@@ -34,6 +36,7 @@ void start_game(Game *g) {
     // activate player 1
     set_active(g->p1, true);
     // start clock
+    
 }
 
 void stop_game(Game *g) {

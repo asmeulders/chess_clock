@@ -1,9 +1,13 @@
-// System imports
+#define _POSIX_C_SOURCE 199309L
+// System Imports
+#include <time.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 // Project imports
 #include "game.h"
 #include "players.h"
+#include "clock.h"
 
 
 void basic_test() {
@@ -51,4 +55,44 @@ void change_turns_not_started_test() {
     end_turn(g);
     destroy_game(g);
     g = NULL;
+}
+
+void start_clock_test() {
+    Clock *c = create_clock();
+    start_clock(c);
+
+    printf("Clock start time: %d\n", get_game_start(c).tv_sec);
+    struct timespec time;
+    clock_gettime(CLOCK_MONOTONIC, &time);
+    printf("Time Now: %d\n", time.tv_sec);
+}
+
+void clear_clock_test() {
+    Clock *c = create_clock();
+    clear_clock(c);
+    printf("Clock start time: %d\n", get_game_start(c).tv_sec);
+}
+
+void set_game_start_test() {
+    Clock *c = create_clock();
+    struct timespec *time = malloc(sizeof(struct timespec));
+    time->tv_sec = 10; time->tv_nsec = 10;
+
+    set_game_start(c, time);
+    printf("Clock start time: %d\n", get_game_start(c).tv_sec);
+
+    free(time);
+    time = NULL;
+}
+
+void set_turn_start_test() {
+    Clock *c = create_clock();
+    struct timespec *time = malloc(sizeof(struct timespec));
+    time->tv_sec = 10; time->tv_nsec = 10;
+
+    set_turn_start(c, time);
+    printf("Clock start time: %d\n", get_turn_start(c).tv_sec);
+
+    free(time);
+    time = NULL;
 }

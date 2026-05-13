@@ -7,6 +7,6 @@
 
 int main()
 {
-    change_turns_not_started_test();
+    set_turn_start_test();
     return 0;
 }

@@ -1,9 +1,11 @@
 #define _POSIX_C_SOURCE 199309L
+// System Imports
 #include <stdbool.h>
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+// Project Imports
 #include "players.h"
 
 struct Player {

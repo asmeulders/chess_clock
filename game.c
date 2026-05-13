@@ -5,6 +5,7 @@
 // Project Imports
 #include "players.h"
 #include "game.h"
+#include "clock.h"
 
 struct Game {
     Player *p1;

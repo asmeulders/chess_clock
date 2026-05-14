@@ -9,9 +9,18 @@
 #include "players.h"
 #include "clock.h"
 
+TimeControls *make_mtc() {
+    TimeControls *mtc = malloc(sizeof(TimeControls*));
+    return mtc;
+}
+
+void destroy_mtc(TimeControls *mtc) {
+    free(mtc);
+}
 
 void basic_test() {
-    Game *g = create_game(60);
+    TimeControls *mtc = make_mtc();
+    Game *g = create_game(mtc);
     printf("Game duration: %d\n", get_duration(g));
     Player *p1 = get_player(g, 1);
     Player *p2 = get_player(g, 2);
@@ -20,10 +29,12 @@ void basic_test() {
     printf("Handle incorrect id: %s\n", get_player(g, 3) == NULL ? "success" : "failure");
     destroy_game(g);
     g = NULL; p1 = NULL; p2 = NULL;
+    destroy_mtc(mtc);
 }
 
 void basic_game_test() {
-    Game *g = create_game(60);
+    TimeControls *mtc = make_mtc();
+    Game *g = create_game(mtc);
     start_game(g);
     Player *p1 = get_player(g, 1);
     Player *p2 = get_player(g, 2);
@@ -34,10 +45,12 @@ void basic_game_test() {
     printf("Player 2:\n - Not Active: %s\n - Not Eliminated: %s\n", is_active(p2) ? "false" : "true", is_eliminated(p2) ? "false" : "true");
     destroy_game(g);
     g = NULL; p1 = NULL; p2 = NULL;
+    destroy_mtc(mtc);
 }
 
 void change_turns_test() {
-    Game *g = create_game(60);
+    TimeControls *mtc = make_mtc();
+    Game *g = create_game(mtc);
     start_game(g);
     Player *p1 = get_player(g, 1);
     Player *p2 = get_player(g, 2);
@@ -48,13 +61,16 @@ void change_turns_test() {
     printf("Player 2:\n - Not Active: %s\n - Not Eliminated: %s\n", is_active(p2) ? "false" : "true", is_eliminated(p2) ? "false" : "true");
     destroy_game(g);
     g = NULL; p1 = NULL; p2 = NULL;
+    destroy_mtc(mtc);
 }
 
 void change_turns_not_started_test() {
-    Game *g = create_game(60);
+    TimeControls *mtc = make_mtc();
+    Game *g = create_game(mtc);
     end_turn(g);
     destroy_game(g);
     g = NULL;
+    destroy_mtc(mtc);
 }
 
 void start_clock_test() {

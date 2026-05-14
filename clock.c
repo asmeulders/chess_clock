@@ -35,6 +35,7 @@ void stop_clock(Clock *c) {
 }
 
 void clear_clock(Clock *c) {
+    printf("Clear Clock");
     // reset everything to 0
     struct timespec zero = { 0, 0 };
     c->game_start = zero;

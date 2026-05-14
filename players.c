@@ -39,3 +39,11 @@ void set_active(Player *p, bool is_active) {
 bool is_eliminated(Player *p) {
     return p->time_remaining.tv_sec <= 0 && p->time_remaining.tv_nsec <= 0;
 }
+
+struct timespec get_time_remaining(Player *p) {
+    return p->time_remaining;
+}
+
+void set_time_remaining(Player *p, struct timespec t) {
+    p->time_remaining = t;
+}

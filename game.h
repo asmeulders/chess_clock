@@ -11,9 +11,11 @@ typedef struct Game Game;
 
 Game* create_game(TimeControls *tc);
 void destroy_game(Game *g);
+void initialize_players(Game *g);
 void start_game_loop(Game *g);
 void start_game(Game *g);
 void stop_game(Game *g);
+void reset_game(Game *g);
 Player* get_player(Game *g, int id);
 int get_duration(Game *g);
 void end_turn(Game *g);

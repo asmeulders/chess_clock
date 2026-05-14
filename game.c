@@ -1,3 +1,4 @@
+#define _POSIX_C_SOURCE 199309L
 // System Imports
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,13 +19,9 @@ struct Game {
 };
 
 Game *create_game(TimeControls *tc) {
-    Clock *c = create_clock();
-    Player *p1 = create_player(get_minutes(tc) * 60); // seconds
-    Player *p2 = create_player(get_minutes(tc) * 60);
-
     Game *g = malloc(sizeof(Game));
-    g->p1 = p1;
-    g->p2 = p2;
+    Clock *c = create_clock();
+    initialize_players(g);
     g->in_progress = false;
     g->active_pid = 1;
 }
@@ -37,6 +34,24 @@ void destroy_game(Game *g) {
     free(g);
 }
 
+void initialize_players(Game *g) {
+    Player *p1 = create_player(get_duration(g) * 60); // seconds
+    Player *p2 = create_player(get_duration(g) * 60);
+    g->p1 = p1;
+    g->p2 = p2;
+}
+
+void reset_players(Game *g) {
+    struct timespec t = { get_duration(g), 0 };
+    Player *p1 = get_player(g, 1);
+    Player *p2 = get_player(g, 2);
+    // Reset values
+    set_active(p1, false);
+    set_active(p2, false);
+    set_time_remaining(p1, t);
+    set_time_remaining(p2, t);
+}
+
 void start_game_loop(Game *g) {    
     while (g->in_progress) {
         char c;
@@ -45,49 +60,55 @@ void start_game_loop(Game *g) {
         switch (c)
         {
         case 's': // start
-            /* code */
+            start_game(g);
             break;
 
         case 'p': // pause
-            /* code */
+            stop_game(g);
             break;
 
         case 'e': // end turn
-            /* code */
+            end_turn(g);
             break;
 
-        case 'c': // clear
-            /* code */
+        case 'r': // reset game
+            reset_game(g);
             break;
 
+        // TODO: New Time Control, Reset Game (is this what clear clock should be?)
         default:
             // count down
             printf("Default case");
             // sleep
-            usleep(1000000); // sleep for one second for now to test
+            sleep(1); // sleep for one second for now to test
             // print time
             break;
         }
     }
-        
-    
 
-    printf("Input: %c\n", c);
-    printf("End of program\n");
 }
 
 void start_game(Game *g) {
+    printf("Start Game\n");
     // activate player 1
     set_active(g->p1, true);
     // start clock
-    
+    g->in_progress = true;
 }
 
 void stop_game(Game *g) {
+    printf("Stop Game\n");
     // deactivate both players
     set_active(g->p1, false);
     set_active(g->p2, false);
     // stops clock
+    g->in_progress = false;
+}
+
+void reset_game(Game *g) {
+    printf("Reset Game\n");
+    stop_game(g);
+    reset_players(g);
 }
 
 Player *get_player(Game *g, int id) {
@@ -115,8 +136,24 @@ int get_duration(Game *g) {
 }
 
 void end_turn(Game *g) {
+    printf("End Turn\n");
     Player *p1 = get_player(g, 1);
     Player *p2 = get_player(g, 2);
+    Player *p;
+
+    // Add seconds
+    if (get_seconds(get_time_controls(g->c)) > 0) {
+        if (is_active(p1)) {
+            p = p1;
+        } else {
+            p = p2;
+        }
+        struct timespec time = get_time_remaining(p);
+        time.tv_sec = time.tv_sec + get_seconds(get_time_controls(g->c));
+        set_time_remaining(p, time);
+    }
+
+    // Change active players
     if (is_active(p1) != is_active(p2)) {
         set_active(p1, !is_active(p1));
         set_active(p2, !is_active(p2));

@@ -16,7 +16,7 @@ struct Clock {
 
 Clock *create_clock(TimeControls *tc) {
     printf("Create clock\n");
-    fflush(stdout);
+    // fflush(stdout);
     Clock *c = malloc(sizeof(Clock));
     c->tc = tc;
     return c;
@@ -70,6 +70,6 @@ struct timespec get_turn_start(Clock *c) {
 
 TimeControls *get_time_controls(Clock *c) {
     printf("Get TC\n");
-    fflush(stdout);
+    // fflush(stdout);
     return c->tc; // THIS IS THE ERROR
 }

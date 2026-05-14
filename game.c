@@ -14,15 +14,17 @@ struct Game {
     Clock *clock;
     Player *p1;
     Player *p2;
+    bool in_standby;
     bool in_progress;
     int active_pid;
 };
 
 Game *create_game(Clock *cl) {
     printf("Create game\n");
-    fflush(stdout);
+    // fflush(stdout);
     Game *g = malloc(sizeof(Game));
     g->clock = cl;
+    g->in_standby = false;
     g->in_progress = false;
     g->active_pid = 1;
     initialize_players(g);
@@ -39,7 +41,7 @@ void destroy_game(Game *g) {
 
 void initialize_players(Game *g) {
     printf("Initialize players\n");
-    fflush(stdout);
+    // fflush(stdout);
     Player *p1 = create_player(get_duration(g) * 60); // seconds
     Player *p2 = create_player(get_duration(g) * 60);
     g->p1 = p1;
@@ -58,17 +60,23 @@ void reset_players(Game *g) {
 }
 
 void start_game_loop(Game *g) {   
-    printf("Start game loop\n");
-    fflush(stdout); 
+    // flush buffer
+    int ch;
+    while ((ch = getchar()) != '\n' && ch != EOF);
+
+    printf("Game ready, press Enter to begin...");
+    getchar();
+    start_game(g);
+    
     while (g->in_progress) {
         char c;
-        printf("Enter a character: ");
+        printf("Enter a character: "); // flush the buffer here because it is getting called twice
         scanf("%c", &c);
         switch (c)
         {
-        case 's': // start
-            start_game(g);
-            break;
+        // case 's': // start
+        //     start_game(g);
+        //     break;
 
         case 'p': // pause
             stop_game(g);
@@ -100,6 +108,7 @@ void start_game(Game *g) {
     // activate player 1
     set_active(g->p1, true);
     // start clock
+    // g->in_standby = false;
     g->in_progress = true;
 }
 
@@ -138,9 +147,9 @@ Player *get_player(Game *g, int id) {
     return p;
 }
 
-int get_duration(Game *g) { // HERE IS THE BREAK. get_tc works but get_minutes doesnt
+int get_duration(Game *g) {
     printf("Get duration\n");
-    fflush(stdout);
+    // fflush(stdout);
     return get_minutes(get_time_controls(g->clock));
 }
 

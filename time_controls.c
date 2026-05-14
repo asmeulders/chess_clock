@@ -12,7 +12,7 @@ struct TimeControls {
 
 TimeControls *make_time_controls(int minutes, int seconds) {
     printf("Make Time Controls\n");
-    fflush(stdout);
+    // fflush(stdout);
     TimeControls *tc = malloc(sizeof(TimeControls));
     tc->minutes = minutes;
     tc->seconds = seconds;
@@ -25,7 +25,7 @@ void destroy_time_controls(TimeControls *tc) {
 
 int get_minutes(TimeControls *tc) {
     printf("Get Minutes\n");
-    fflush(stdout);
+    // fflush(stdout);
     return tc->minutes;
 }
 

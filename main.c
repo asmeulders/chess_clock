@@ -23,7 +23,6 @@ void user_begin() {
     while (listening) {
         char c;
         scanf(" %c", &c);
-        printf("%c\n", c);
         switch (c)
         {
         case 's':
@@ -31,8 +30,7 @@ void user_begin() {
             TimeControls *tc = input_time_controls();
             Clock *cl = create_clock(tc);
             Game *g = create_game(cl);
-            printf("After create game\n");
-            fflush(stdout);
+            // fflush(stdout);
             start_game_loop(g);
             break;
         
@@ -57,7 +55,7 @@ TimeControls *input_time_controls() {
     int seconds;
     scanf(" %d", &seconds);
     printf("Entering make time controls\n");
-    fflush(stdout);
+    // fflush(stdout);
     TimeControls *tc = make_time_controls(minutes, seconds);
     return tc;
 }

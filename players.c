@@ -15,7 +15,7 @@ struct Player {
 
 Player *create_player(int game_duration) {
     printf("Create player\n");
-    fflush(stdout);
+    // fflush(stdout);
     struct timespec t = {game_duration, 0};
 
     Player *p = malloc(sizeof(Player));

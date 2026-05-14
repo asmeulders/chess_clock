@@ -71,5 +71,5 @@ struct timespec get_turn_start(Clock *c) {
 TimeControls *get_time_controls(Clock *c) {
     printf("Get TC\n");
     fflush(stdout);
-    return c->tc;
+    return c->tc; // THIS IS THE ERROR
 }

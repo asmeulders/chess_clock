@@ -4,8 +4,9 @@
 
 // Project Imports
 #include "game.h"
-#include "test.h"
+#include "clock.h"
 #include "time_controls.h"
+#include "test.h"
 
 void user_begin();
 TimeControls *input_time_controls();
@@ -28,7 +29,8 @@ void user_begin() {
         case 's':
             printf("Starting\n");
             TimeControls *tc = input_time_controls();
-            Game *g = create_game(tc);
+            Clock *cl = create_clock(tc);
+            Game *g = create_game(cl);
             printf("After create game\n");
             fflush(stdout);
             start_game_loop(g);

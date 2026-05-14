@@ -4,12 +4,13 @@
 // System Imports
 
 // Project Imports
+#include "clock.h"
 #include "players.h"
 #include "time_controls.h"
 
 typedef struct Game Game;
 
-Game* create_game(TimeControls *tc);
+Game *create_game(Clock *cl);
 void destroy_game(Game *g);
 void initialize_players(Game *g);
 void start_game_loop(Game *g);

@@ -7,7 +7,7 @@
 // Project imports
 
 TimeControls *make_mtc();
-void destroy_mtc(TimeControls *tc);
+Clock *make_mcl();
 void basic_test();
 void basic_game_test();
 void change_turns_test();

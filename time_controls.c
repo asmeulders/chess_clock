@@ -32,3 +32,11 @@ int get_minutes(TimeControls *tc) {
 int get_seconds(TimeControls *tc) {
     return tc->seconds;
 }
+
+void set_minutes(TimeControls *tc, int minutes) {
+    tc->minutes = minutes;
+}
+
+void set_seconds(TimeControls *tc, int seconds) {
+    tc->seconds = seconds;
+}

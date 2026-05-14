@@ -11,28 +11,27 @@
 #include "clock.h"
 
 struct Game {
-    Clock *c;
+    Clock *clock;
     Player *p1;
     Player *p2;
     bool in_progress;
     int active_pid;
 };
 
-Game *create_game(TimeControls *tc) {
+Game *create_game(Clock *cl) {
     printf("Create game\n");
     fflush(stdout);
     Game *g = malloc(sizeof(Game));
-    Clock *c = create_clock(tc);
-    initialize_players(g);
-    g->c = c;
+    g->clock = cl;
     g->in_progress = false;
     g->active_pid = 1;
+    initialize_players(g);
     return g;
 }
 
 void destroy_game(Game *g) {
     if (g == NULL) return;
-    destroy_clock(g->c);
+    destroy_clock(g->clock);
     destroy_player(g->p1);
     destroy_player(g->p2);
     free(g);
@@ -139,10 +138,10 @@ Player *get_player(Game *g, int id) {
     return p;
 }
 
-int get_duration(Game *g) {
+int get_duration(Game *g) { // HERE IS THE BREAK. get_tc works but get_minutes doesnt
     printf("Get duration\n");
     fflush(stdout);
-    return get_minutes(get_time_controls(g->c));
+    return get_minutes(get_time_controls(g->clock));
 }
 
 void end_turn(Game *g) {
@@ -152,14 +151,14 @@ void end_turn(Game *g) {
     Player *p;
 
     // Add seconds
-    if (get_seconds(get_time_controls(g->c)) > 0) {
+    if (get_seconds(get_time_controls(g->clock)) > 0) {
         if (is_active(p1)) {
             p = p1;
         } else {
             p = p2;
         }
         struct timespec time = get_time_remaining(p);
-        time.tv_sec = time.tv_sec + get_seconds(get_time_controls(g->c));
+        time.tv_sec = time.tv_sec + get_seconds(get_time_controls(g->clock));
         set_time_remaining(p, time);
     }
 

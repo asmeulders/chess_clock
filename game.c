@@ -14,25 +14,24 @@ struct Game {
     Player *p1;
     Player *p2;
     bool in_progress;
-    int duration;
     int active_pid;
 };
 
-Game *create_game(int duration) {
+Game *create_game(TimeControls *tc) {
     Clock *c = create_clock();
-    Player *p1 = create_player(duration);
-    Player *p2 = create_player(duration);
+    Player *p1 = create_player(get_minutes(tc) * 60); // seconds
+    Player *p2 = create_player(get_minutes(tc) * 60);
 
     Game *g = malloc(sizeof(Game));
     g->p1 = p1;
     g->p2 = p2;
     g->in_progress = false;
-    g->duration = duration;
     g->active_pid = 1;
 }
 
 void destroy_game(Game *g) {
     if (g == NULL) return;
+    destroy_clock(g->c);
     destroy_player(g->p1);
     destroy_player(g->p2);
     free(g);
@@ -112,7 +111,7 @@ Player *get_player(Game *g, int id) {
 }
 
 int get_duration(Game *g) {
-    return g->duration;
+    return get_minutes(get_time_controls(g->c));
 }
 
 void end_turn(Game *g) {

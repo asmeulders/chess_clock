@@ -5,9 +5,10 @@
 // Project Imports
 #include "game.h"
 #include "test.h"
+#include "time_controls.h"
 
 void user_begin();
-void input_time_controls();
+TimeControls *input_time_controls();
 
 int main()
 {
@@ -33,7 +34,8 @@ void user_begin() {
         switch (c)
         {
         case 's':
-            Game *g = create_game(duration);
+            TimeControls *tc = input_time_controls();
+            Game *g = create_game(tc);
             start_game_loop(g);
             break;
         
@@ -41,6 +43,15 @@ void user_begin() {
     }
 }
 
-void input_time_controls() {
-    
+TimeControls *input_time_controls() {
+    // validate user input (no negatives, etc)
+    printf("Input minutes per player: ");
+    int minutes;
+    scanf("%d", &minutes);
+    printf("Input seconds added per turn: ");
+    int seconds;
+    scanf("%d", &seconds);
+
+    TimeControls *tc = make_time_controls(minutes, seconds);
+    return tc;
 }

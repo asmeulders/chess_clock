@@ -6,18 +6,22 @@
 
 // Project Imports
 #include "clock.h"
+#include "time_controls.h"
 
 struct Clock {
     struct timespec game_start;
     struct timespec turn_start;
+    TimeControls *tc;
 };
 
-Clock *create_clock() {
+Clock *create_clock(TimeControls *tc) {
     Clock *c = malloc(sizeof(Clock));
+    c->tc = tc;
     return c;
 }
 
 void destroy_clock(Clock *c) {
+    destroy_time_controls(c->tc);
     free(c);
 }
 
@@ -59,4 +63,8 @@ struct timespec get_game_start(Clock *c) {
 
 struct timespec get_turn_start(Clock *c) {
     return c->turn_start;
+}
+
+TimeControls *get_time_controls(Clock *c) {
+    return c->tc;
 }

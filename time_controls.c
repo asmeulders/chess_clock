@@ -19,3 +19,11 @@ TimeControls *make_time_controls(int minutes, int seconds) {
 void destroy_time_controls(TimeControls *tc) {
     free(tc);
 }
+
+int get_minutes(TimeControls *tc) {
+    return tc->minutes;
+}
+
+int get_seconds(TimeControls *tc) {
+    return tc->seconds;
+}

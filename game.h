@@ -1,11 +1,15 @@
 #ifndef GAME
 #define GAME
 
+// System Imports
+
+// Project Imports
 #include "players.h"
+#include "time_controls.h"
 
 typedef struct Game Game;
 
-Game* create_game(int duration);
+Game* create_game(TimeControls *tc);
 void destroy_game(Game *g);
 void start_game_loop(Game *g);
 void start_game(Game *g);

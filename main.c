@@ -29,6 +29,8 @@ void user_begin() {
             printf("Starting\n");
             TimeControls *tc = input_time_controls();
             Game *g = create_game(tc);
+            printf("After create game\n");
+            fflush(stdout);
             start_game_loop(g);
             break;
         
@@ -52,7 +54,8 @@ TimeControls *input_time_controls() {
     printf("Input seconds added per turn: ");
     int seconds;
     scanf(" %d", &seconds);
-
+    printf("Entering make time controls\n");
+    fflush(stdout);
     TimeControls *tc = make_time_controls(minutes, seconds);
     return tc;
 }

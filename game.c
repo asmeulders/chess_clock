@@ -19,11 +19,15 @@ struct Game {
 };
 
 Game *create_game(TimeControls *tc) {
+    printf("Create game\n");
+    fflush(stdout);
     Game *g = malloc(sizeof(Game));
-    Clock *c = create_clock();
+    Clock *c = create_clock(tc);
     initialize_players(g);
+    g->c = c;
     g->in_progress = false;
     g->active_pid = 1;
+    return g;
 }
 
 void destroy_game(Game *g) {
@@ -35,6 +39,8 @@ void destroy_game(Game *g) {
 }
 
 void initialize_players(Game *g) {
+    printf("Initialize players\n");
+    fflush(stdout);
     Player *p1 = create_player(get_duration(g) * 60); // seconds
     Player *p2 = create_player(get_duration(g) * 60);
     g->p1 = p1;
@@ -52,11 +58,13 @@ void reset_players(Game *g) {
     set_time_remaining(p2, t);
 }
 
-void start_game_loop(Game *g) {    
+void start_game_loop(Game *g) {   
+    printf("Start game loop\n");
+    fflush(stdout); 
     while (g->in_progress) {
         char c;
         printf("Enter a character: ");
-        getchar();
+        scanf("%c", &c);
         switch (c)
         {
         case 's': // start
@@ -132,6 +140,8 @@ Player *get_player(Game *g, int id) {
 }
 
 int get_duration(Game *g) {
+    printf("Get duration\n");
+    fflush(stdout);
     return get_minutes(get_time_controls(g->c));
 }
 

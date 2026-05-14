@@ -74,41 +74,51 @@ void change_turns_not_started_test() {
 }
 
 void start_clock_test() {
-    Clock *c = create_clock();
+    TimeControls *mtc = make_mtc();
+    Clock *c = create_clock(mtc);
     start_clock(c);
 
-    printf("Clock start time: %d\n", get_game_start(c).tv_sec);
+    printf("Clock start time: %ld\n", get_game_start(c).tv_sec);
     struct timespec time;
     clock_gettime(CLOCK_MONOTONIC, &time);
-    printf("Time Now: %d\n", time.tv_sec);
+    printf("Time Now: %ld\n", time.tv_sec);
+    destroy_clock(c);
+    // free(mtc);
 }
 
 void clear_clock_test() {
-    Clock *c = create_clock();
+    TimeControls *mtc = make_mtc();
+    Clock *c = create_clock(mtc);
     clear_clock(c);
-    printf("Clock start time: %d\n", get_game_start(c).tv_sec);
+    printf("Clock start time: %ld\n", get_game_start(c).tv_sec);
+    destroy_clock(c);
+    // free(mtc);
 }
 
 void set_game_start_test() {
-    Clock *c = create_clock();
+    TimeControls *mtc = make_mtc();
+    Clock *c = create_clock(mtc);
     struct timespec *time = malloc(sizeof(struct timespec));
     time->tv_sec = 10; time->tv_nsec = 10;
 
     set_game_start(c, time);
-    printf("Clock start time: %d\n", get_game_start(c).tv_sec);
+    printf("Clock start time: %ld\n", get_game_start(c).tv_sec);
 
     free(time);
     time = NULL;
+    destroy_clock(c);
 }
 
 void set_turn_start_test() {
-    Clock *c = create_clock();
+    TimeControls *mtc = make_mtc();
+    Clock *c = create_clock(mtc);
     struct timespec *time = malloc(sizeof(struct timespec));
     time->tv_sec = 10; time->tv_nsec = 10;
 
     set_turn_start(c, time);
-    printf("Clock start time: %d\n", get_turn_start(c).tv_sec);
+    printf("Clock start time: %ld\n", get_turn_start(c).tv_sec);
 
     free(time);
     time = NULL;
+    destroy_clock(c);
 }

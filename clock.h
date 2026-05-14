@@ -9,7 +9,7 @@
 
 typedef struct Clock Clock;
 
-Clock *create_clock();
+Clock *create_clock(TimeControls *tc);
 void destroy_clock(Clock *c);
 void start_clock(Clock *c);
 void stop_clock(Clock *c);

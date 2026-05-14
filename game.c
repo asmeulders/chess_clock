@@ -1,6 +1,8 @@
 // System Imports
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <stdbool.h>
 
 // Project Imports
 #include "players.h"
@@ -11,7 +13,9 @@ struct Game {
     Clock *c;
     Player *p1;
     Player *p2;
+    bool in_progress;
     int duration;
+    int active_pid;
 };
 
 Game *create_game(int duration) {
@@ -22,7 +26,9 @@ Game *create_game(int duration) {
     Game *g = malloc(sizeof(Game));
     g->p1 = p1;
     g->p2 = p2;
+    g->in_progress = false;
     g->duration = duration;
+    g->active_pid = 1;
 }
 
 void destroy_game(Game *g) {
@@ -30,6 +36,45 @@ void destroy_game(Game *g) {
     destroy_player(g->p1);
     destroy_player(g->p2);
     free(g);
+}
+
+void start_game_loop(Game *g) {    
+    while (g->in_progress) {
+        char c;
+        printf("Enter a character: ");
+        getchar();
+        switch (c)
+        {
+        case 's': // start
+            /* code */
+            break;
+
+        case 'p': // pause
+            /* code */
+            break;
+
+        case 'e': // end turn
+            /* code */
+            break;
+
+        case 'c': // clear
+            /* code */
+            break;
+
+        default:
+            // count down
+            printf("Default case");
+            // sleep
+            usleep(1000000); // sleep for one second for now to test
+            // print time
+            break;
+        }
+    }
+        
+    
+
+    printf("Input: %c\n", c);
+    printf("End of program\n");
 }
 
 void start_game(Game *g) {

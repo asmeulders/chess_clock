@@ -7,6 +7,7 @@ typedef struct Game Game;
 
 Game* create_game(int duration);
 void destroy_game(Game *g);
+void start_game_loop(Game *g);
 void start_game(Game *g);
 void stop_game(Game *g);
 Player* get_player(Game *g, int id);

@@ -83,8 +83,4 @@ void calculate_turn_end(Clock *c, struct timespec time_remaining) {
     clock_gettime(CLOCK_MONOTONIC, &c->turn_end);
     c->turn_end.tv_sec += time_remaining.tv_sec;
     c->turn_end.tv_nsec += time_remaining.tv_nsec;
-    if (c->turn_end.tv_nsec > 100000000) {
-        c->turn_end.tv_sec += 1;
-        c->turn_end.tv_nsec -= 100000000;
-    }
 }

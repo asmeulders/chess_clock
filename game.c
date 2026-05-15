@@ -126,6 +126,11 @@ void start_game(Game *g) {
     // g->in_standby = false;
     g->in_progress = true;
     calculate_turn_end(g->clock, get_time_remaining(get_active_player(g)));
+
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    long duration_sec = get_turn_end(g->clock).tv_sec - now.tv_sec;
+    printf("Turn end (s): %ld\n", duration_sec);
 }
 
 void stop_game(Game *g) {

@@ -11,6 +11,7 @@
 struct Clock {
     struct timespec game_start;
     struct timespec turn_start;
+    struct timespec turn_end;
     TimeControls *tc;
 };
 
@@ -68,8 +69,22 @@ struct timespec get_turn_start(Clock *c) {
     return c->turn_start;
 }
 
+struct timespec get_turn_end(Clock *c) {
+    return c->turn_end;
+}
+
 TimeControls *get_time_controls(Clock *c) {
     printf("Get TC\n");
     // fflush(stdout);
-    return c->tc; // THIS IS THE ERROR
+    return c->tc;
+}
+
+void calculate_turn_end(Clock *c, struct timespec time_remaining) {
+    clock_gettime(CLOCK_MONOTONIC, &c->turn_end);
+    c->turn_end.tv_sec += time_remaining.tv_sec;
+    c->turn_end.tv_nsec += time_remaining.tv_nsec;
+    if (c->turn_end.tv_nsec > 100000000) {
+        c->turn_end.tv_sec += 1;
+        c->turn_end.tv_nsec -= 100000000;
+    }
 }

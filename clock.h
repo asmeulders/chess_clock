@@ -18,6 +18,8 @@ void set_game_start(Clock *c, struct timespec *time);
 void set_turn_start(Clock *c, struct timespec *time);
 struct timespec get_game_start(Clock *c);
 struct timespec get_turn_start(Clock *c);
+struct timespec get_turn_end(Clock *c);
 TimeControls *get_time_controls(Clock *c);
+void calculate_turn_end(Clock *c, struct timespec time_remaining);
 
 #endif

@@ -38,7 +38,7 @@ void set_active(Player *p, bool is_active) {
     p->is_active = is_active;
 }
 
-bool is_eliminated(Player *p) {
+bool is_eliminated(Player *p) { // this is only updated after the turn ends so this wont work
     return p->time_remaining.tv_sec <= 0 && p->time_remaining.tv_nsec <= 0;
 }
 

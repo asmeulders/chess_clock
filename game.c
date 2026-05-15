@@ -18,6 +18,7 @@ struct Game {
     Clock *clock;
     Player *p1;
     Player *p2;
+    struct timespec end_of_turn;
     bool in_standby;
     bool in_progress;
     int active_pid;
@@ -63,14 +64,16 @@ void reset_players(Game *g) {
     set_time_remaining(p2, t);
 }
 
+Player *get_active_player(Game *g) {
+    return get_player(g, g->active_pid);
+}
+
 void start_game_loop(Game *g) {   
     flush_buffer();
     printf("Game ready, press Enter to begin...");
     getchar();
     start_game(g);
     struct timespec ts = {0, 100000000};
-    struct timespec start;
-    clock_gettime(CLOCK_MONOTONIC, &start);
     
     atexit(restore_terminal);
     set_raw_mode();
@@ -81,23 +84,33 @@ void start_game_loop(Game *g) {
             // input was available
             switch (c) {
                 case 'p': stop_game(g); break;
-                case 'e': end_turn(g); break;
+                case 'e': end_turn(g); break; // have a different function for pause vs game over
                 case 'r': reset_game(g); break;
                 default: break;
             }
         } else {
             struct timespec now;
             clock_gettime(CLOCK_MONOTONIC, &now);
-            long elapsed_sec = now.tv_sec - start.tv_sec;
-            long elapsed_nsec = now.tv_nsec - start.tv_nsec;
-            if (elapsed_nsec < 0) {
-                elapsed_sec -= 1;
-                elapsed_nsec += 1000000000;
+            // do calculations
+            long remaining_sec = get_turn_end(g->clock).tv_sec - now.tv_sec;
+            long remaining_nsec = get_turn_end(g->clock).tv_nsec - now.tv_nsec;
+            if (remaining_nsec < 0) {
+                remaining_sec -= 1;
+                remaining_nsec += 1000000000;
             }
-            long seconds = elapsed_sec % 60;
-            long minutes = elapsed_sec / 60;
-            long tenth = elapsed_nsec / 100000000L; 
-            printf("\r%02ld:%02ld.%ld", minutes, seconds, tenth);
+            struct timespec time_remaining = { remaining_sec, remaining_nsec };
+            set_time_remaining(get_active_player(g), time_remaining);
+
+            // check if eliminated
+            if (time_remaining.tv_sec < 0) {
+                stop_game(g); // have a different function for pause vs game over
+            }
+
+            // update clock 
+            long seconds = remaining_sec % 60;
+            long minutes = remaining_sec / 60;
+            long tenth = remaining_nsec / 100000000L; 
+            printf("\r%02ld:%02ld.%ld active - %d", minutes, seconds, tenth, g->active_pid);
             fflush(stdout);
             nanosleep(&ts, NULL);  // 0.1 seconds
         }
@@ -111,6 +124,7 @@ void start_game(Game *g) {
     // start clock
     // g->in_standby = false;
     g->in_progress = true;
+    calculate_turn_end(g->clock, get_time_remaining(get_active_player(g)));
 }
 
 void stop_game(Game *g) {
@@ -173,12 +187,16 @@ void end_turn(Game *g) {
     }
 
     // Change active players
+    g->active_pid = (g->active_pid) % 2 + 1;
+    // Change active players - this might not be necessary
     if (is_active(p1) != is_active(p2)) {
         set_active(p1, !is_active(p1));
         set_active(p2, !is_active(p2));
     } else {
         printf("Game has not started yet.\n");
     }
+
+    calculate_turn_end(g->clock, get_time_remaining(get_active_player(g)));
 }
 
 void flush_buffer() {

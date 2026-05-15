@@ -4,6 +4,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <termios.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <time.h>
 
 // Project Imports
 #include "players.h"
@@ -60,47 +64,44 @@ void reset_players(Game *g) {
 }
 
 void start_game_loop(Game *g) {   
-    // flush buffer
-    int ch;
-    while ((ch = getchar()) != '\n' && ch != EOF);
-
+    flush_buffer();
     printf("Game ready, press Enter to begin...");
     getchar();
     start_game(g);
+    struct timespec ts = {0, 100000000};
+    struct timespec start;
+    clock_gettime(CLOCK_MONOTONIC, &start);
     
+    atexit(restore_terminal);
+    set_raw_mode();
     while (g->in_progress) {
         char c;
-        printf("Enter a character: "); // flush the buffer here because it is getting called twice
-        scanf("%c", &c);
-        switch (c)
-        {
-        // case 's': // start
-        //     start_game(g);
-        //     break;
-
-        case 'p': // pause
-            stop_game(g);
-            break;
-
-        case 'e': // end turn
-            end_turn(g);
-            break;
-
-        case 'r': // reset game
-            reset_game(g);
-            break;
-
-        // TODO: New Time Control, Reset Game (is this what clear clock should be?)
-        default:
-            // count down
-            printf("Default case");
-            // sleep
-            sleep(1); // sleep for one second for now to test
-            // print time
-            break;
+        // printf("Enter a character: "); // flush the buffer here because it is getting called twice
+        if (read(STDIN_FILENO, &c, 1) == 1) {
+            // input was available
+            switch (c) {
+                case 'p': stop_game(g); break;
+                case 'e': end_turn(g); break;
+                case 'r': reset_game(g); break;
+                default: break;
+            }
+        } else {
+            struct timespec now;
+            clock_gettime(CLOCK_MONOTONIC, &now);
+            long elapsed_sec = now.tv_sec - start.tv_sec;
+            long elapsed_nsec = now.tv_nsec - start.tv_nsec;
+            if (elapsed_nsec < 0) {
+                elapsed_sec -= 1;
+                elapsed_nsec += 1000000000;
+            }
+            long seconds = elapsed_sec % 60;
+            long minutes = elapsed_sec / 60;
+            long tenth = elapsed_nsec / 100000000L; 
+            printf("\r%02ld:%02ld.%ld", minutes, seconds, tenth);
+            fflush(stdout);
+            nanosleep(&ts, NULL);  // 0.1 seconds
         }
     }
-
 }
 
 void start_game(Game *g) {
@@ -178,4 +179,25 @@ void end_turn(Game *g) {
     } else {
         printf("Game has not started yet.\n");
     }
+}
+
+void flush_buffer() {
+    int ch;
+    while ((ch = getchar()) != '\n' && ch != EOF);
+}
+
+void set_raw_mode() {
+    struct termios t;
+    tcgetattr(STDIN_FILENO, &t);
+    t.c_lflag &= ~(ICANON | ECHO);  // disable line buffering and echo
+    t.c_cc[VMIN] = 0;   // don't block waiting for input
+    t.c_cc[VTIME] = 0;  // no timeout
+    tcsetattr(STDIN_FILENO, TCSANOW, &t);
+}
+
+void restore_terminal() {
+    struct termios t;
+    tcgetattr(STDIN_FILENO, &t);
+    t.c_lflag |= (ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &t);
 }

@@ -20,5 +20,8 @@ void reset_game(Game *g);
 Player* get_player(Game *g, int id);
 int get_duration(Game *g);
 void end_turn(Game *g);
+void flush_buffer();
+void set_raw_mode();
+void restore_terminal();
 
 #endif

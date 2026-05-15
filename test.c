@@ -45,7 +45,7 @@ void basic_game_test() {
     Player *p2 = get_player(g, 2);
     printf("Player 1:\n - Not Active: %s\n - Not Eliminated: %s\n", is_active(p1) ? "false" : "true", is_eliminated(p1) ? "false" : "true");
     printf("Player 2:\n - Not Active: %s\n - Not Eliminated: %s\n", is_active(p2) ? "false" : "true", is_eliminated(p2) ? "false" : "true");
-    stop_game(g);
+    game_over(g);
     printf("Player 1:\n - Not Active: %s\n - Not Eliminated: %s\n", is_active(p1) ? "false" : "true", is_eliminated(p1) ? "false" : "true");
     printf("Player 2:\n - Not Active: %s\n - Not Eliminated: %s\n", is_active(p2) ? "false" : "true", is_eliminated(p2) ? "false" : "true");
     destroy_game(g);

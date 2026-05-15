@@ -83,7 +83,8 @@ void start_game_loop(Game *g) {
         if (read(STDIN_FILENO, &c, 1) == 1) {
             // input was available
             switch (c) {
-                case 'p': stop_game(g); break;
+                case 'p': pause_game(g); break;
+                case 's': game_over(g); break;
                 case 'e': end_turn(g); break; // have a different function for pause vs game over
                 case 'r': reset_game(g); break;
                 default: break;
@@ -103,7 +104,7 @@ void start_game_loop(Game *g) {
 
             // check if eliminated
             if (time_remaining.tv_sec < 0) {
-                stop_game(g); // have a different function for pause vs game over
+                game_over(g); // have a different function for pause vs game over
             }
 
             // update clock 
@@ -133,8 +134,13 @@ void start_game(Game *g) {
     printf("Turn end (s): %ld\n", duration_sec);
 }
 
-void stop_game(Game *g) {
-    printf("\n\n%s\n\nStop Game\n", g->in_progress ? "in progress" : "game over");
+void pause_game(Game *g) {
+    flush_buffer();
+    printf("Game paused, press Enter to resume...");
+    getchar();
+}
+
+void game_over(Game *g) {
     // deactivate both players
     g->active_pid = -1;
     set_active(g->p1, false);
@@ -145,7 +151,7 @@ void stop_game(Game *g) {
 
 void reset_game(Game *g) {
     printf("Reset Game\n");
-    stop_game(g);
+    game_over(g);
     reset_players(g);
 }
 

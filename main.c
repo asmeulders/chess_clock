@@ -31,6 +31,7 @@ void user_begin() {
             Clock *cl = create_clock(tc);
             Game *g = create_game(cl);
             // fflush(stdout);
+            listening = false;
             start_game_loop(g);
             break;
         

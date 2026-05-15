@@ -31,7 +31,7 @@ Game *create_game(Clock *cl) {
     g->clock = cl;
     g->in_standby = false;
     g->in_progress = false;
-    g->active_pid = 1;
+    g->active_pid = -1;
     initialize_players(g);
     return g;
 }
@@ -96,7 +96,7 @@ void start_game_loop(Game *g) {
             long remaining_nsec = get_turn_end(g->clock).tv_nsec - now.tv_nsec;
             if (remaining_nsec < 0) {
                 remaining_sec -= 1;
-                remaining_nsec += 1000000000;
+                remaining_nsec += 1000000000; // this can continue to add time after the game is over so be careful
             }
             struct timespec time_remaining = { remaining_sec, remaining_nsec };
             set_time_remaining(get_active_player(g), time_remaining);
@@ -120,7 +120,8 @@ void start_game_loop(Game *g) {
 void start_game(Game *g) {
     printf("Start Game\n");
     // activate player 1
-    set_active(g->p1, true);
+    g->active_pid = 1;
+    set_active(g->p1, true); // do i even need this?
     // start clock
     // g->in_standby = false;
     g->in_progress = true;
@@ -128,8 +129,9 @@ void start_game(Game *g) {
 }
 
 void stop_game(Game *g) {
-    printf("Stop Game\n");
+    printf("\n\n%s\n\nStop Game\n", g->in_progress ? "in progress" : "game over");
     // deactivate both players
+    g->active_pid = -1;
     set_active(g->p1, false);
     set_active(g->p2, false);
     // stops clock

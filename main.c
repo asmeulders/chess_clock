@@ -1,6 +1,7 @@
 // System Imports
 #include <stdio.h>
 #include <stdbool.h>
+#include <ncurses.h>
 
 // Project Imports
 #include "game.h"
@@ -13,35 +14,41 @@ TimeControls *input_time_controls();
 
 int main()
 {
+    // ncurses setup
+    initscr();
+    cbreak();
+    noecho();
+    curs_set(0);
+
     user_begin();
     return 0;
 }
 
 void user_begin() {
-    printf("Enter 's' to begin, 'q' to quit: ");
+    printw("Enter 's' to begin, 'q' to quit: ");
+    refresh();
     bool listening = true;
     while (listening) {
-        char c;
-        scanf(" %c", &c);
+        int c = getch();
         switch (c)
         {
         case 's':
-            printf("Starting\n");
             TimeControls *tc = input_time_controls();
             Clock *cl = create_clock(tc);
             Game *g = create_game(cl);
-            // fflush(stdout);
             listening = false;
             start_game_loop(g);
             break;
         
         case 'q':
-            printf("Quitting\n");
+            printw("Quitting\n");
+            refresh();
             listening = false;
             break;
 
         default:
             printf("Unknown command\n");
+            refresh();
             break;
         }
     }

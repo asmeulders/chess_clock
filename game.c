@@ -27,11 +27,13 @@ static struct timespec ts = {0, 100000000};
 // ************************************************************************************
 
 static int get_duration(Game *g);
+static void stand_by();
 static void start_game(Game *g);
 static void pause_game(Game *g);
 static void end_turn(Game *g);
+static void stop_game(Game *g);
 static void game_over(Game *g);
-static void reset_game(Game *g);
+static void restart_game(Game *g);
 static void update(Game *g);
 static void initialize_players(Game *g);
 static Player *get_player(Game *g, int id);
@@ -92,20 +94,16 @@ Commands:
 - r -> reset game from beginning 
 */
 void start_game_loop(Game *g) { 
-    printw("Game ready, press Enter to begin...\n");
-    refresh();
-    int begin;
-    while ((begin = getch()) != '\n'); // TODO: put this in a separate function for the reset game?
-
+    stand_by();
     start_game(g);
     nodelay(stdscr, TRUE);
     while (g->running && g->paused == 0) {
         int input = getch();
         switch (input) {
-            case 'p': pause_game(g); break; // TODO: have a different function for pause vs game over
-            case 's': game_over(g); break;
+            case 'p': pause_game(g); break;
+            case 'e': stop_game(g); break;
             case ' ': end_turn(g); break; 
-            case 'r': reset_game(g); break;
+            case 'r': restart_game(g); break;
             default: break;
         }
         
@@ -128,6 +126,13 @@ void start_game_loop(Game *g) {
 /* Returns minutes per player. */
 static int get_duration(Game *g) {
     return get_minutes(get_time_controls(g->clock));
+}
+
+static void stand_by() {
+    printw("Game ready, press Enter to begin...\n");
+    refresh();
+    int begin;
+    while ((begin = getch()) != '\n');
 }
 
 // ************************************************************************************
@@ -204,6 +209,23 @@ static void end_turn(Game *g) {
     calculate_turn_end(g->clock, get_time_remaining(get_active_player(g)));
 }
 
+static void stop_game(Game *g) {
+    clear();
+    refresh();
+    nodelay(stdscr, FALSE);
+    int listening = 1;
+
+    while (listening) {
+        int input = getch();
+        switch (input) {
+            case 'r': break; // restart game
+            case 'n': break; // new game
+            case 'q': break; // exit
+            default: break; // unknown command
+        }
+    }
+}
+
 /* Ends game where one player wins. */
 static void game_over(Game *g) {
     // deactivate both players and stop game
@@ -213,17 +235,17 @@ static void game_over(Game *g) {
     g->running = 0;
     g->paused = 0;
 
-    printw("\rGame Over, Player %d wins! Press Enter to exit", (g->active_pid % 2) + 1);
+    printw("\rGame Over, Player %d wins!\n", (g->active_pid % 2) + 1);
     refresh();
-    nodelay(stdscr, FALSE);
-    int resume;
-    while ((resume = getch()) != '\n');
 }
 
 /* Reset the game from standby with current time controls. */
-static void reset_game(Game *g) { // TODO
-    game_over(g);
+static void restart_game(Game *g) { // TODO
+    clear();
     reset_players(g);
+    printw("Restarting game...\n");
+    stand_by();
+    start_game(g);
 }
 
 /* Update the timer display and sets the time remaining for a player. */
@@ -269,7 +291,7 @@ static void initialize_players(Game *g) {
 
 /* Reset the players to be not active and have current time controls minutes remaining. */
 static void reset_players(Game *g) {
-    struct timespec t = { get_duration(g), 0 };
+    struct timespec t = { get_duration(g) * 60, 0 };
     Player *p1 = get_player(g, 1);
     Player *p2 = get_player(g, 2);
     // Reset values

@@ -32,6 +32,7 @@ void user_begin() {
     printw("Enter 's' to begin, 'q' to quit: \n");
     refresh();
     bool listening = true;
+    int unknown_count = 0;
     while (listening) {
         int c = getch();
         switch (c)
@@ -51,7 +52,9 @@ void user_begin() {
             break;
 
         default:
-            printw("Unknown command\n");
+            unknown_count++;
+            printw("\rUnknown command");
+            if (unknown_count >=2 ) printw(" (x%d)", unknown_count);
             refresh();
             break;
         }

@@ -3,7 +3,6 @@
 #include <stdbool.h>
 #include <ncurses.h>
 #include <stdlib.h>
-#include <string.h>
 
 // Project Imports
 #include "game.h"
@@ -13,7 +12,6 @@
 
 void user_begin();
 TimeControls *input_time_controls();
-int get_int(const char *promt);
 
 int main()
 {
@@ -59,29 +57,4 @@ void user_begin() {
             break;
         }
     }
-}
-
-TimeControls *input_time_controls() { // TODO: validate user input (no negatives, etc)
-    int minutes = get_int("Enter minutes per player: ");
-    int seconds = get_int("Enter seconds added per turn: ");
-    TimeControls *tc = make_time_controls(minutes, seconds);
-    return tc;
-}
-
-int get_int(const char *prompt) {
-    char buf[32];
-    int n = 0;
-
-    printw("%s", prompt);
-    refresh();
-
-    echo();
-    curs_set(1);
-    wgetnstr(stdscr, buf, sizeof(buf) - 1);
-    noecho();
-    curs_set(0);
-
-    if (strlen(buf) > 0)
-        n = atoi(buf);
-    return n;
 }

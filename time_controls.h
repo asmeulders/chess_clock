@@ -9,5 +9,6 @@ int get_minutes(TimeControls *tc);
 int get_seconds(TimeControls *tc);
 void set_minutes(TimeControls *tc, int minutes);
 void set_seconds(TimeControls *tc, int seconds);
+TimeControls *input_time_controls();
 
 #endif

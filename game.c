@@ -15,6 +15,7 @@
 #include "player.h"
 #include "game.h"
 #include "clock.h"
+#include "time_controls.h"
 
 // ************************************************************************************
 // ----- Static Variables -------------------------------------------------------------
@@ -32,7 +33,9 @@ static void start_game(Game *g);
 static void pause_game(Game *g);
 static void end_turn(Game *g);
 static void stop_game(Game *g);
+static void exit_game(Game *g);
 static void game_over(Game *g);
+static void new_game(Game *g);
 static void restart_game(Game *g);
 static void update(Game *g);
 static void initialize_players(Game *g);
@@ -96,7 +99,6 @@ Commands:
 void start_game_loop(Game *g) { 
     stand_by();
     start_game(g);
-    nodelay(stdscr, TRUE);
     while (g->running && g->paused == 0) {
         int input = getch();
         switch (input) {
@@ -107,6 +109,10 @@ void start_game_loop(Game *g) {
             default: break;
         }
         
+        if (g->active_pid == 0) {
+            return;
+        }
+
         update(g);
     
         // check if eliminated - make its own function
@@ -153,6 +159,7 @@ static void start_game(Game *g) {
     clear();
     refresh();
     printw("Chess: %d | %d\n", get_minutes(get_time_controls(g->clock)), get_seconds(get_time_controls(g->clock)));
+    nodelay(stdscr, TRUE);
 }
 
 /* Pauses the game. */
@@ -211,6 +218,7 @@ static void end_turn(Game *g) {
 
 static void stop_game(Game *g) {
     clear();
+    printw("Play again?\n");
     refresh();
     nodelay(stdscr, FALSE);
     int listening = 1;
@@ -218,9 +226,9 @@ static void stop_game(Game *g) {
     while (listening) {
         int input = getch();
         switch (input) {
-            case 'r': break; // restart game
-            case 'n': break; // new game
-            case 'q': break; // exit
+            case 'r': listening = 0; restart_game(g); break; // restart game
+            case 'n': listening = 0; new_game(g); break; // new game
+            case 'q': listening = 0; exit_game(g); break; // exit
             default: break; // unknown command
         }
     }
@@ -228,22 +236,38 @@ static void stop_game(Game *g) {
 
 /* Ends game where one player wins. */
 static void game_over(Game *g) {
+    printw("\rGame Over, Player %d wins!\n", (g->active_pid % 2) + 1);
+    refresh();
+    stop_game(g);
+}
+
+static void exit_game(Game *g) {
     // deactivate both players and stop game
     g->active_pid = 0;
     set_active(g->p1, false);
     set_active(g->p2, false);
     g->running = 0;
     g->paused = 0;
-
-    printw("\rGame Over, Player %d wins!\n", (g->active_pid % 2) + 1);
-    refresh();
 }
 
 /* Reset the game from standby with current time controls. */
-static void restart_game(Game *g) { // TODO
+static void restart_game(Game *g) {
     clear();
     reset_players(g);
     printw("Restarting game...\n");
+    stand_by();
+    start_game(g);
+}
+
+/* Make a new game by updating time controls and clock in game struct. */
+static void new_game(Game *g) {
+    printw("Making new game...\n");
+    TimeControls *tc = input_time_controls();
+    destroy_clock(g->clock);
+    Clock *cl = create_clock(tc);
+    g->clock = cl;
+    reset_players(g);
+    
     stand_by();
     start_game(g);
 }

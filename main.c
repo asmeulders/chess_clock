@@ -24,6 +24,7 @@ int main()
     curs_set(0);
 
     user_begin();
+    endwin();
     return 0;
 }
 
@@ -50,7 +51,7 @@ void user_begin() {
             break;
 
         default:
-            printf("Unknown command\n");
+            printw("Unknown command\n");
             refresh();
             break;
         }

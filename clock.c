@@ -18,8 +18,6 @@ struct Clock {
 };
 
 Clock *create_clock(TimeControls *tc) {
-    printf("Create clock\n");
-    // fflush(stdout);
     Clock *c = malloc(sizeof(Clock));
     c->tc = tc;
     return c;
@@ -42,8 +40,13 @@ TimeControls *get_time_controls(Clock *c) {
     return c->tc;
 }
 
+/* Updates the clock turn end based on time remaining. */
 void calculate_turn_end(Clock *c, struct timespec time_remaining) {
-    clock_gettime(CLOCK_MONOTONIC, &c->turn_end);
+    clock_gettime(CLOCK_MONOTONIC, &c->turn_end); // get current time
     c->turn_end.tv_sec += time_remaining.tv_sec;
     c->turn_end.tv_nsec += time_remaining.tv_nsec;
+    if (c->turn_end.tv_nsec > 1000000000) {
+        c->turn_end.tv_nsec -= 1000000000;
+        c->turn_end.tv_sec += 1;
+    }
 }

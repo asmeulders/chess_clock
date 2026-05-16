@@ -9,6 +9,7 @@
 #include <fcntl.h>
 #include <time.h>
 #include <ncurses.h>
+#include <string.h>
 
 // Project Imports
 #include "player.h"
@@ -19,7 +20,6 @@
 // ----- Static Variables -------------------------------------------------------------
 // ************************************************************************************
 
-static struct termios orig;
 static struct timespec ts = {0, 100000000};
 
 // ************************************************************************************
@@ -27,7 +27,6 @@ static struct timespec ts = {0, 100000000};
 // ************************************************************************************
 
 static int get_duration(Game *g);
-static void flush_buffer();
 static void start_game(Game *g);
 static void pause_game(Game *g);
 static void end_turn(Game *g);
@@ -55,18 +54,23 @@ struct Game {
     int active_pid;
 };
 
+/* Creates a game and returns a pointer. Initializes:
+- running = 0
+- paused = 0
+- active_pid = 0
+- players
+*/
 Game *create_game(Clock *cl) {
-    // fflush(stdout);
     Game *g = malloc(sizeof(Game));
     g->clock = cl;
-    // g->standby = 0;
     g->running = 0;
     g->paused = 0;
-    g->active_pid = -1;
+    g->active_pid = 0;
     initialize_players(g);
     return g;
 }
 
+/* Frees game from memory. */
 void destroy_game(Game *g) {
     if (g == NULL) return;
     destroy_clock(g->clock);
@@ -79,19 +83,28 @@ void destroy_game(Game *g) {
 // ----- Game Loop --------------------------------------------------------------------
 // ************************************************************************************
 
+/* Starts the game loop. Begins by waiting for user to start game.
+Then enters non-blocking user input and will update the timer. 
+Commands:
+- p -> Pauses game
+- s -> Stops game
+- <space> -> Ends currnt player's turn
+- r -> reset game from beginning 
+*/
 void start_game_loop(Game *g) { 
     printw("Game ready, press Enter to begin...\n");
     refresh();
-    int begin = getch();
+    int begin;
+    while ((begin = getch()) != '\n'); // TODO: put this in a separate function for the reset game?
 
     start_game(g);
     nodelay(stdscr, TRUE);
     while (g->running && g->paused == 0) {
         int input = getch();
         switch (input) {
-            case 'p': pause_game(g); break;
+            case 'p': pause_game(g); break; // TODO: have a different function for pause vs game over
             case 's': game_over(g); break;
-            case 'e': end_turn(g); break; // TODO: have a different function for pause vs game over
+            case ' ': end_turn(g); break; 
             case 'r': reset_game(g); break;
             default: break;
         }
@@ -106,51 +119,62 @@ void start_game_loop(Game *g) {
         // sleep
         nanosleep(&ts, NULL);
     }
-    endwin();
 }
 
 // ************************************************************************************
 // ----- Helper Functions -------------------------------------------------------------
 // ************************************************************************************
 
+/* Returns minutes per player. */
 static int get_duration(Game *g) {
-    printf("Get duration\n");
-    // fflush(stdout);
     return get_minutes(get_time_controls(g->clock));
-}
-
-static void flush_buffer() {
-    int ch;
-    while ((ch = getchar()) != '\n' && ch != EOF);
 }
 
 // ************************************************************************************
 // ----- Internal Functions -----------------------------------------------------------
 // ************************************************************************************
 
+/* Starts game and changes values for the loop to begin. Prints timer. */
 static void start_game(Game *g) {
     // activate player 1
     g->active_pid = 1;
     set_active(g->p1, true); // do i even need this?
-    // start clock
-    // g->standby = 0;
     g->running = 1;
     calculate_turn_end(g->clock, get_time_remaining(get_active_player(g)));
 
     struct timespec now;
     clock_gettime(CLOCK_MONOTONIC, &now);
-    long duration_sec = get_turn_end(g->clock).tv_sec - now.tv_sec;
-}
 
-static void pause_game(Game *g) { // TODO
-    flush_buffer();
-    printw("Game paused, press Enter to resume...");
+    clear();
     refresh();
-    getchar();
+    printw("Chess: %d | %d\n", get_minutes(get_time_controls(g->clock)), get_seconds(get_time_controls(g->clock)));
 }
 
+/* Pauses the game. */
+static void pause_game(Game *g) { // TODO: update the end turn time, i am not and the clock still ticks down while here 
+    struct timespec time_remaining = get_time_remaining(get_active_player(g));
+
+    int y, x;
+    getyx(stdscr, y, x);
+    const char *paused = " (PAUSED) Press enter to resume";
+    printw("%s", paused);
+    refresh();
+
+    nodelay(stdscr, FALSE);
+    int resume;
+    while ((resume = getch()) != '\n');
+    nodelay(stdscr, TRUE);
+
+    calculate_turn_end(g->clock, time_remaining);
+
+    // clear text
+    mvwhline(stdscr, y, x, ' ', strlen(paused));  // write n spaces starting at (y, x)
+    wmove(stdscr, y, x); // go back to original position
+    refresh();
+}
+
+/* Ends the turn of the active player. Will add time to clock if needed. */
 static void end_turn(Game *g) {
-    printf("End Turn\n");
     Player *p1 = get_player(g, 1);
     Player *p2 = get_player(g, 2);
     Player *p;
@@ -174,30 +198,35 @@ static void end_turn(Game *g) {
         set_active(p1, !is_active(p1));
         set_active(p2, !is_active(p2));
     } else {
-        printf("Game has not started yet.\n");
+        // printf("Game has not started yet.\n");
     }
 
     calculate_turn_end(g->clock, get_time_remaining(get_active_player(g)));
 }
 
+/* Ends game where one player wins. */
 static void game_over(Game *g) {
-    // deactivate both players
-    g->active_pid = -1;
+    // deactivate both players and stop game
+    g->active_pid = 0;
     set_active(g->p1, false);
     set_active(g->p2, false);
-    // stops clock
     g->running = 0;
     g->paused = 0;
 
-    printw("\rGame Over, Player %d wins!", g->active_pid);
+    printw("\rGame Over, Player %d wins! Press Enter to exit", (g->active_pid % 2) + 1);
     refresh();
+    nodelay(stdscr, FALSE);
+    int resume;
+    while ((resume = getch()) != '\n');
 }
 
+/* Reset the game from standby with current time controls. */
 static void reset_game(Game *g) { // TODO
     game_over(g);
     reset_players(g);
 }
 
+/* Update the timer display and sets the time remaining for a player. */
 static void update(Game *g) {
     struct timespec now;
     clock_gettime(CLOCK_MONOTONIC, &now);
@@ -206,7 +235,7 @@ static void update(Game *g) {
     long remaining_nsec = get_turn_end(g->clock).tv_nsec - now.tv_nsec;
     if (remaining_nsec < 0) {
         remaining_sec -= 1;
-        remaining_nsec += 1000000000; // this can continue to add time after the game is over so be careful
+        remaining_nsec += 1000000000;
     }
     struct timespec time_remaining = { remaining_sec, remaining_nsec };
     set_time_remaining(get_active_player(g), time_remaining);
@@ -230,14 +259,15 @@ static void update(Game *g) {
 // ----- Acessing players -------------------------------------------------------------
 // ************************************************************************************
 
+/* Initialize players with the game duration. */
 static void initialize_players(Game *g) {
-    // fflush(stdout);
     Player *p1 = create_player(get_duration(g) * 60); // seconds
     Player *p2 = create_player(get_duration(g) * 60);
     g->p1 = p1;
     g->p2 = p2;
 }
 
+/* Reset the players to be not active and have current time controls minutes remaining. */
 static void reset_players(Game *g) {
     struct timespec t = { get_duration(g), 0 };
     Player *p1 = get_player(g, 1);
@@ -249,6 +279,7 @@ static void reset_players(Game *g) {
     set_time_remaining(p2, t);
 }
 
+/* Returns a player with a given id. */
 static Player *get_player(Game *g, int id) {
     Player *p = NULL;
 
@@ -262,13 +293,14 @@ static Player *get_player(Game *g, int id) {
         p = g->p2;
         break;
     default:
-        printf("Invalid id: %d\n", id);
+        // printf("Invalid id: %d\n", id);
         break;
     }
 
     return p;
 }
 
+/* Returns the current active player in a game. */
 static Player *get_active_player(Game *g) {
     return get_player(g, g->active_pid);
 }

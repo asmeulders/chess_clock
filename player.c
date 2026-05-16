@@ -6,7 +6,11 @@
 #include <stdlib.h>
 
 // Project Imports
-#include "players.h"
+#include "player.h"
+
+// ************************************************************************************
+// ----- Player Struct ----------------------------------------------------------------
+// ************************************************************************************
 
 struct Player {
     struct timespec time_remaining;
@@ -26,9 +30,12 @@ Player *create_player(int game_duration) {
 
 void destroy_player(Player *p) {
     if (p == NULL) return;
-
     free(p);
 }
+
+// ************************************************************************************
+// ----- Player Functions -------------------------------------------------------------
+// ************************************************************************************
 
 bool is_active(Player *p) {
     return p->is_active;
@@ -38,7 +45,7 @@ void set_active(Player *p, bool is_active) {
     p->is_active = is_active;
 }
 
-bool is_eliminated(Player *p) { // this is only updated after the turn ends so this wont work
+bool is_eliminated(Player *p) { // TODO: this is only updated after the turn ends so this wont work - not used right now
     return p->time_remaining.tv_sec <= 0 && p->time_remaining.tv_nsec <= 0;
 }
 

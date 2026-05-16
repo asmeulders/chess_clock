@@ -11,7 +11,7 @@
 #include <ncurses.h>
 
 // Project Imports
-#include "players.h"
+#include "player.h"
 #include "game.h"
 #include "clock.h"
 
@@ -21,6 +21,24 @@
 
 static struct termios orig;
 static struct timespec ts = {0, 100000000};
+
+// ************************************************************************************
+// ----- Static Declarations ----------------------------------------------------------
+// ************************************************************************************
+
+static int get_duration(Game *g);
+static void flush_buffer();
+static void start_game(Game *g);
+static void pause_game(Game *g);
+static void end_turn(Game *g);
+static void game_over(Game *g);
+static void reset_game(Game *g);
+static void update(Game *g);
+static void initialize_players(Game *g);
+static Player *get_player(Game *g, int id);
+static Player *get_active_player(Game *g);
+static void reset_players(Game *g);
+
 
 // ************************************************************************************
 // ----- Game Struct ------------------------------------------------------------------
@@ -55,6 +73,40 @@ void destroy_game(Game *g) {
     destroy_player(g->p1);
     destroy_player(g->p2);
     free(g);
+}
+
+// ************************************************************************************
+// ----- Game Loop --------------------------------------------------------------------
+// ************************************************************************************
+
+void start_game_loop(Game *g) { 
+    printw("Game ready, press Enter to begin...\n");
+    refresh();
+    int begin = getch();
+
+    start_game(g);
+    nodelay(stdscr, TRUE);
+    while (g->running && g->paused == 0) {
+        int input = getch();
+        switch (input) {
+            case 'p': pause_game(g); break;
+            case 's': game_over(g); break;
+            case 'e': end_turn(g); break; // TODO: have a different function for pause vs game over
+            case 'r': reset_game(g); break;
+            default: break;
+        }
+        
+        update(g);
+    
+        // check if eliminated - make its own function
+        if (get_time_remaining(get_active_player(g)).tv_sec < 0) {
+            game_over(g); // have a different function for pause vs game over
+        }
+
+        // sleep
+        nanosleep(&ts, NULL);
+    }
+    endwin();
 }
 
 // ************************************************************************************
@@ -197,7 +249,7 @@ static void reset_players(Game *g) {
     set_time_remaining(p2, t);
 }
 
-Player *get_player(Game *g, int id) {
+static Player *get_player(Game *g, int id) {
     Player *p = NULL;
 
     switch (id)
@@ -217,40 +269,7 @@ Player *get_player(Game *g, int id) {
     return p;
 }
 
-Player *get_active_player(Game *g) {
+static Player *get_active_player(Game *g) {
     return get_player(g, g->active_pid);
 }
 
-// ************************************************************************************
-// ----- Game Loop --------------------------------------------------------------------
-// ************************************************************************************
-
-void start_game_loop(Game *g) { 
-    printw("Game ready, press Enter to begin...\n");
-    refresh();
-    int begin = getch();
-
-    start_game(g);
-    nodelay(stdscr, TRUE);
-    while (g->running && g->paused == 0) {
-        int input = getch();
-        switch (input) {
-            case 'p': pause_game(g); break;
-            case 's': game_over(g); break;
-            case 'e': end_turn(g); break; // TODO: have a different function for pause vs game over
-            case 'r': reset_game(g); break;
-            default: break;
-        }
-        
-        update(g);
-    
-        // check if eliminated - make its own function
-        if (get_time_remaining(get_active_player(g)).tv_sec < 0) {
-            game_over(g); // have a different function for pause vs game over
-        }
-
-        // sleep
-        nanosleep(&ts, NULL);
-    }
-    endwin();
-}

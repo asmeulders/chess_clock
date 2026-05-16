@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <ncurses.h>
+#include <stdlib.h>
+#include <string.h>
 
 // Project Imports
 #include "game.h"
@@ -11,6 +13,7 @@
 
 void user_begin();
 TimeControls *input_time_controls();
+int get_int(const char *promt);
 
 int main()
 {
@@ -25,7 +28,7 @@ int main()
 }
 
 void user_begin() {
-    printw("Enter 's' to begin, 'q' to quit: ");
+    printw("Enter 's' to begin, 'q' to quit: \n");
     refresh();
     bool listening = true;
     while (listening) {
@@ -54,16 +57,27 @@ void user_begin() {
     }
 }
 
-TimeControls *input_time_controls() {
-    // validate user input (no negatives, etc)
-    printf("Input minutes per player: ");
-    int minutes;
-    scanf(" %d", &minutes);
-    printf("Input seconds added per turn: ");
-    int seconds;
-    scanf(" %d", &seconds);
-    printf("Entering make time controls\n");
-    // fflush(stdout);
+TimeControls *input_time_controls() { // TODO: validate user input (no negatives, etc)
+    int minutes = get_int("Enter minutes per player: ");
+    int seconds = get_int("Enter seconds added per turn: ");
     TimeControls *tc = make_time_controls(minutes, seconds);
     return tc;
+}
+
+int get_int(const char *prompt) {
+    char buf[32];
+    int n = 0;
+
+    printw("%s", prompt);
+    refresh();
+
+    echo();
+    curs_set(1);
+    wgetnstr(stdscr, buf, sizeof(buf) - 1);
+    noecho();
+    curs_set(0);
+
+    if (strlen(buf) > 0)
+        n = atoi(buf);
+    return n;
 }

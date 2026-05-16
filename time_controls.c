@@ -5,14 +5,16 @@
 // Project Imports
 #include "time_controls.h"
 
+// ************************************************************************************
+// ----- Time Controls Struct ---------------------------------------------------------
+// ************************************************************************************
+
 struct TimeControls {
     int minutes;
     int seconds;
 };
 
 TimeControls *make_time_controls(int minutes, int seconds) {
-    printf("Make Time Controls\n");
-    // fflush(stdout);
     TimeControls *tc = malloc(sizeof(TimeControls));
     tc->minutes = minutes;
     tc->seconds = seconds;
@@ -23,9 +25,11 @@ void destroy_time_controls(TimeControls *tc) {
     free(tc);
 }
 
+// ************************************************************************************
+// ----- Time Controls Functions ------------------------------------------------------
+// ************************************************************************************
+
 int get_minutes(TimeControls *tc) {
-    printf("Get Minutes\n");
-    // fflush(stdout);
     return tc->minutes;
 }
 

@@ -8,9 +8,11 @@
 #include "clock.h"
 #include "time_controls.h"
 
+// ************************************************************************************
+// ----- Clock Struct -----------------------------------------------------------------
+// ************************************************************************************
+
 struct Clock {
-    struct timespec game_start;
-    struct timespec turn_start;
     struct timespec turn_end;
     TimeControls *tc;
 };
@@ -28,54 +30,15 @@ void destroy_clock(Clock *c) {
     free(c);
 }
 
-void start_clock(Clock *c) {
-    set_game_start(c, NULL);
-    set_turn_start(c, NULL);
-}
-
-void stop_clock(Clock *c) {
-    // stops clock for one player
-}
-
-void clear_clock(Clock *c) {
-    printf("Clear Clock");
-    // reset everything to 0
-    struct timespec zero = { 0, 0 };
-    c->game_start = zero;
-    c->turn_start = zero;
-}
-
-void set_game_start(Clock *c, struct timespec *time) {
-    if (time != NULL) {
-        c->game_start = *time;
-    } else {
-        clock_gettime(CLOCK_MONOTONIC, &c->game_start);
-    }
-}
-
-void set_turn_start(Clock *c, struct timespec *time) {
-    if (time != NULL) {
-        c->turn_start = *time;
-    } else {
-        clock_gettime(CLOCK_MONOTONIC, &c->turn_start);
-    }
-}
-
-struct timespec get_game_start(Clock *c) {
-    return c->game_start;
-}
-
-struct timespec get_turn_start(Clock *c) {
-    return c->turn_start;
-}
+// ************************************************************************************
+// ----- Clock Functions --------------------------------------------------------------
+// ************************************************************************************
 
 struct timespec get_turn_end(Clock *c) {
     return c->turn_end;
 }
 
 TimeControls *get_time_controls(Clock *c) {
-    printf("Get TC\n");
-    // fflush(stdout);
     return c->tc;
 }
 

@@ -42,6 +42,7 @@ static void initialize_players(Game *g);
 static Player *get_player(Game *g, int id);
 static Player *get_active_player(Game *g);
 static void reset_players(Game *g);
+static void format_time(char *time_str, int len, Game *g, int id);
 
 
 // ************************************************************************************
@@ -141,6 +142,15 @@ static void stand_by() {
     while ((begin = getch()) != '\n');
 }
 
+static void format_time(char *time_str, int len, Game *g, int id) {
+    struct timespec time_remaining = get_time_remaining(get_player(g, id));
+    long s = time_remaining.tv_sec % 60;
+    long m = time_remaining.tv_sec / 60;
+    long t = time_remaining.tv_nsec / 100000000; 
+
+    snprintf(time_str, len, "%02ld:%02ld.%ld", m, s, t);
+}
+
 // ************************************************************************************
 // ----- Internal Functions -----------------------------------------------------------
 // ************************************************************************************
@@ -163,7 +173,7 @@ static void start_game(Game *g) {
 }
 
 /* Pauses the game. */
-static void pause_game(Game *g) { // TODO: update the end turn time, i am not and the clock still ticks down while here 
+static void pause_game(Game *g) {
     struct timespec time_remaining = get_time_remaining(get_active_player(g));
 
     int y, x;
@@ -276,7 +286,7 @@ static void new_game(Game *g) {
 static void update(Game *g) {
     struct timespec now;
     clock_gettime(CLOCK_MONOTONIC, &now);
-    // do calculations
+    // do calculations - could make another function here to add and subtract timespecs TODO
     long remaining_sec = get_turn_end(g->clock).tv_sec - now.tv_sec;
     long remaining_nsec = get_turn_end(g->clock).tv_nsec - now.tv_nsec;
     if (remaining_nsec < 0) {
@@ -286,18 +296,12 @@ static void update(Game *g) {
     struct timespec time_remaining = { remaining_sec, remaining_nsec };
     set_time_remaining(get_active_player(g), time_remaining);
 
-    // update clock - could make this into its own function in player that returns a string
-    struct timespec p1_time_remaining = get_time_remaining(get_player(g, 1));
-    long p1_seconds = p1_time_remaining.tv_sec % 60;
-    long p1_minutes = p1_time_remaining.tv_sec / 60;
-    long p1_tenth = p1_time_remaining.tv_nsec / 100000000; 
-
-    struct timespec p2_time_remaining = get_time_remaining(get_player(g, 2));
-    long p2_seconds = p2_time_remaining.tv_sec % 60;
-    long p2_minutes = p2_time_remaining.tv_sec / 60;
-    long p2_tenth = p2_time_remaining.tv_nsec / 100000000; 
-
-    printw("\rPlayer 1: %02ld:%02ld.%ld | Player 2: %02ld:%02ld.%ld", p1_minutes, p1_seconds, p1_tenth, p2_minutes, p2_seconds, p2_tenth); // have two clocks, one per player
+    // update clock
+    char p1_time_str[9];
+    char p2_time_str[9];
+    format_time(p1_time_str, sizeof(p1_time_str), g, 1);
+    format_time(p2_time_str, sizeof(p2_time_str), g, 2);
+    printw("\rPlayer 1: %s | Player 2: %s", p1_time_str, p2_time_str);
     refresh();
 }
 

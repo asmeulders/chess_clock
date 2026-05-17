@@ -83,7 +83,7 @@ static void set_name(Player *p, const char *name) {
 
 static void input_player_name(Player *p, int id) {
     char name[21];
-    printw("\nInput Player %d's name (max 20 characters): ", id);
+    printw("Input Player %d's name (max 20 characters): ", id);
     refresh();
 
     echo();
@@ -97,6 +97,8 @@ static void input_player_name(Player *p, int id) {
 }
 
 void customize_player_names(Game *g) {
+    clear();
+    refresh();
     printw("Customize player names? (y/n): ");
     int ch;
     echo();
@@ -109,6 +111,8 @@ void customize_player_names(Game *g) {
     if (ch == 'n')
         return;
 
+    clear();
+    refresh();
     for (int i = 1; i <= 2; i++)
         input_player_name(get_player(g, i), i);
 

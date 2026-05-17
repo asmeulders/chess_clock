@@ -16,6 +16,7 @@
 #include "game.h"
 #include "clock.h"
 #include "time_controls.h"
+#include "utils.h"
 
 // ************************************************************************************
 // ----- Static Variables -------------------------------------------------------------
@@ -135,6 +136,8 @@ static int get_duration(Game *g) {
 }
 
 static void stand_by() {
+    clear();
+    refresh();
     printw("Game ready, press Enter to begin...\n");
     refresh();
     int begin;
@@ -232,6 +235,7 @@ static void stop_game(Game *g) {
     refresh();
     nodelay(stdscr, FALSE);
     int listening = 1;
+    int unknown_count = 0;
 
     while (listening) {
         int input = getch();
@@ -240,14 +244,14 @@ static void stop_game(Game *g) {
             case 'n': listening = 0; new_game(g); break; // new game
             case 'm': customize_player_names(g); break; // customize player names
             case 'q': listening = 0; exit_game(g); break; // exit
-            default: break; // unknown command
+            default: unknown_command(&unknown_count); break; // unknown command
         }
     }
 }
 
 /* Ends game where one player wins. */
 static void game_over(Game *g) {
-    printw("\rGame Over, Player %d wins!\n", (g->active_pid % 2) + 1);
+    printw("\rGame Over, Player %d wins!", (g->active_pid % 2) + 1);
     refresh();
     stop_game(g);
 }

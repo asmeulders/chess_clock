@@ -8,13 +8,12 @@
 #include "game.h"
 #include "clock.h"
 #include "time_controls.h"
-#include "test.h"
+#include "utils.h"
 
 /* TODO:
-- input validation for time
-- allow for decimals?
-- better print statements
-- make unknown command a separate function
+- move cursor back on game type and time control selection
+- add unknown command while game is running
+- add menus for commands to use in certain areas
 */
 
 void user_begin();
@@ -61,10 +60,7 @@ void user_begin() {
             break;
 
         default:
-            unknown_count++;
-            printw("\rUnknown command");
-            if (unknown_count >=2 ) printw(" (x%d)", unknown_count);
-            refresh();
+            unknown_command(&unknown_count);
             break;
         }
     }

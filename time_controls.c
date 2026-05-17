@@ -7,6 +7,7 @@
 
 // Project Imports
 #include "time_controls.h"
+#include "utils.h"
 
 // ************************************************************************************
 // ----- Static Declarations ----------------------------------------------------------
@@ -58,7 +59,9 @@ void set_seconds(TimeControls *tc, int seconds) {
     tc->seconds = seconds;
 }
 
-TimeControls *input_time_controls() { // TODO: validate user input (no negatives, etc)
+TimeControls *input_time_controls() {
+    clear();
+    refresh();
     printw("Please choose a game type!\nBullet (b) -> 1|0, 2|1\nBlitz (z) -> 3|0, 3|2, 5|0, 5|5\nRapid (r) -> 10|0, 10|5, 15|10, 20|0, 30|0, 60|0\nCustom (c) -> Enter your own values X|X\nInput: ");
     refresh();
     char response[8];
@@ -92,10 +95,7 @@ TimeControls *input_time_controls() { // TODO: validate user input (no negatives
             listening = false;
             return NULL;
         } else {
-            unknown_count++;
-            printw("\rInput: Unknown command");
-            if (unknown_count >=2 ) printw(" (x%d)", unknown_count);
-            refresh();
+            unknown_command(&unknown_count);
         }
     }
     TimeControls *tc = make_time_controls(minutes, seconds);
@@ -111,12 +111,7 @@ static void select_bullet(int *minutes, int *seconds) {
         switch (input) {
             case 1: *minutes = 1; *seconds = 0; listening = 0; break;
             case 2: *minutes = 2; *seconds = 1; listening = 0; break; 
-            default: 
-                unknown_count++;
-                printw("\rInput: Unknown command");
-                if (unknown_count >=2 ) printw(" (x%d)", unknown_count);
-                refresh();
-                break;
+            default: unknown_command(&unknown_count); break;
         }
     }
     
@@ -133,12 +128,7 @@ static void select_blitz(int *minutes, int *seconds) {
             case 2: *minutes = 3; *seconds = 2; listening = 0; break; 
             case 3: *minutes = 5; *seconds = 0; listening = 0; break;
             case 4: *minutes = 5; *seconds = 5; listening = 0; break; 
-            default: 
-                unknown_count++;
-                printw("\rInput: Unknown command");
-                if (unknown_count >=2 ) printw(" (x%d)", unknown_count);
-                refresh();
-                break;
+            default: unknown_command(&unknown_count); break;
         }
     }
 }
@@ -156,35 +146,43 @@ static void select_rapid(int *minutes, int *seconds) {
             case 4: *minutes = 20; *seconds = 0; listening = 0; break; 
             case 5: *minutes = 30; *seconds = 0; listening = 0; break;
             case 6: *minutes = 60; *seconds = 0; listening = 0; break;
-            default: 
-                unknown_count++;
-                printw("\rInput: Unknown command");
-                if (unknown_count >=2 ) printw(" (x%d)", unknown_count);
-                refresh();
-                break;
+            default: unknown_command(&unknown_count); break;
         }
     }
 }
 
 static void input_custom(int *minutes, int *seconds) {
-    int listening = 2;
-    while (listening > 0) {
-        if (listening == 2) {
-            *minutes = get_int("Enter minutes per player: ");
-            if (*minutes > 0)
-                listening = 1;
-            else 
-                printw("Input a positive number");
-            refresh();
-        } else if (listening == 1) {
-            *seconds = get_int("Enter seconds added per turn: ");
-            if (*seconds >= 0)
-                listening = 0;
-            else 
-                printw("Input a positive number");
-            refresh();
-        }
+    int y, x;
+    getyx(stdscr, y, x);
+
+    // minutes
+    while (1) {
+        wmove(stdscr, y, x);
+        wclrtoeol(stdscr);
+        *minutes = get_int("Enter minutes per player: ");
+        if (*minutes > 0) break;
+        wmove(stdscr, y+1, 0);
+        printw("Must be positive.");
+        wmove(stdscr, y, 0);
     }
+
+    // seconds
+    wmove(stdscr, y+1, 0);
+    wclrtoeol(stdscr);
+    while (1) {
+        wmove(stdscr, y+1, 0);
+        wclrtoeol(stdscr);
+        *seconds = get_int("Enter seconds added per turn: ");
+        if (*seconds >= 0) break;
+        wmove(stdscr, y+2, 0);
+        printw("Must be positive.");
+        wmove(stdscr, y+1, 0);
+
+    }
+
+    wmove(stdscr, y+2, 0);
+    wclrtoeol(stdscr);
+    refresh();
 }
 
 static int get_int(const char *prompt) {

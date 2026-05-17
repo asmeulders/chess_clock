@@ -6,8 +6,7 @@
 #include <time.h>
 
 // Project Imports
-
-typedef struct Player Player;
+#include "game.h"
 
 Player* create_player(int game_duration, int id, char *name); // in seconds
 void destroy_player(Player *p);
@@ -17,6 +16,7 @@ bool is_eliminated(Player *p);
 struct timespec get_time_remaining(Player *p);
 void set_time_remaining(Player *p, struct timespec t);
 char *get_name(Player *p);
+void customize_player_names(Game *g);
 
 
 #endif

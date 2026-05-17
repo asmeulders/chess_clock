@@ -4,9 +4,19 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <ncurses.h>
 
 // Project Imports
 #include "player.h"
+#include "game.h"
+
+// ************************************************************************************
+// ----- Static Declarations ----------------------------------------------------------
+// ************************************************************************************
+
+static void input_player_name(Player *p, int id);
+static void set_name(Player *p, const char *name);
 
 // ************************************************************************************
 // ----- Player Struct ----------------------------------------------------------------
@@ -64,4 +74,42 @@ void set_time_remaining(Player *p, struct timespec t) {
 
 char *get_name(Player *p) {
     return p->name;
+}
+
+static void set_name(Player *p, const char *name) {
+    strncpy(p->name, name, sizeof(p->name) - 1);
+    p->name[sizeof(p->name) - 1] = '\0';
+}
+
+static void input_player_name(Player *p, int id) {
+    char name[21];
+    printw("\nInput Player %d's name (max 20 characters): ", id);
+    refresh();
+
+    echo();
+    curs_set(1);
+    wgetnstr(stdscr, name, sizeof(name));
+    noecho();
+    curs_set(0);
+    if (strcmp(name, "") == 0)
+        return;
+    set_name(p, name);
+}
+
+void customize_player_names(Game *g) {
+    printw("Customize player names? (y/n): ");
+    int ch;
+    echo();
+    curs_set(1);
+    ch = getch();
+    noecho();
+    curs_set(0);
+
+    // Skip and have defaults
+    if (ch == 'n')
+        return;
+
+    for (int i = 1; i <= 2; i++)
+        input_player_name(get_player(g, i), i);
+
 }

@@ -39,7 +39,6 @@ static void new_game(Game *g);
 static void restart_game(Game *g);
 static void update(Game *g);
 static void initialize_players(Game *g);
-static Player *get_player(Game *g, int id);
 static Player *get_active_player(Game *g);
 static void reset_players(Game *g);
 static void format_time(char *time_str, int len, Game *g, int id);
@@ -239,6 +238,7 @@ static void stop_game(Game *g) {
         switch (input) {
             case 'r': listening = 0; restart_game(g); break; // restart game
             case 'n': listening = 0; new_game(g); break; // new game
+            case 'm': customize_player_names(g); break; // customize player names
             case 'q': listening = 0; exit_game(g); break; // exit
             default: break; // unknown command
         }
@@ -308,6 +308,8 @@ static void initialize_players(Game *g) {
     Player *p2 = create_player(get_duration(g) * 60, 2, NULL);
     g->p1 = p1;
     g->p2 = p2;
+    // TODO: get player names here
+    customize_player_names(g);
 }
 
 /* Reset the players to be not active and have current time controls minutes remaining. */
@@ -323,7 +325,7 @@ static void reset_players(Game *g) {
 }
 
 /* Returns a player with a given id. */
-static Player *get_player(Game *g, int id) {
+Player *get_player(Game *g, int id) {
     Player *p = NULL;
 
     switch (id)

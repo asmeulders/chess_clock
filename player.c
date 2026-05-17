@@ -14,15 +14,22 @@
 
 struct Player {
     struct timespec time_remaining;
+    char name[21];
     bool is_active;
 };
 
-Player *create_player(int game_duration) {
+Player *create_player(int game_duration, int id, char *name) {
     struct timespec t = {game_duration, 0};
 
     Player *p = malloc(sizeof(Player));
     p->time_remaining = t;
     p->is_active = false;
+    if (name == NULL) {
+        snprintf(p->name, sizeof(p->name), "Player %d", id);
+    } else {
+        snprintf(p->name, sizeof(p->name), "%.10s", name);
+    }
+    
     return p;
 }
 
@@ -43,8 +50,8 @@ void set_active(Player *p, bool is_active) {
     p->is_active = is_active;
 }
 
-bool is_eliminated(Player *p) { // TODO: this is only updated after the turn ends so this wont work - not used right now
-    return p->time_remaining.tv_sec <= 0 && p->time_remaining.tv_nsec <= 0;
+bool is_eliminated(Player *p) {
+    return p->time_remaining.tv_sec < 0;
 }
 
 struct timespec get_time_remaining(Player *p) {
@@ -53,4 +60,8 @@ struct timespec get_time_remaining(Player *p) {
 
 void set_time_remaining(Player *p, struct timespec t) {
     p->time_remaining = t;
+}
+
+char *get_name(Player *p) {
+    return p->name;
 }

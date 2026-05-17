@@ -10,6 +10,16 @@
 #include "time_controls.h"
 #include "test.h"
 
+/* TODO:
+- input validation for time
+- input player names
+- preset times:
+    - blitz: 1|0, 2|1
+    - bullet: 3|0, 3|2, 5|0, 5|5
+    - rapid: 10|0, 15|10, 30|0, 10|5, 20|0, 60|0
+- better print statements
+*/
+
 void user_begin();
 TimeControls *input_time_controls();
 

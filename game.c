@@ -72,6 +72,8 @@ Game *create_game(Clock *cl) {
     g->running = 0;
     g->paused = 0;
     g->active_pid = 0;
+    g->p1 = NULL;
+    g->p2 = NULL;
     initialize_players(g);
     return g;
 }
@@ -115,10 +117,8 @@ void start_game_loop(Game *g) {
         }
 
         update(g);
-    
-        // check if eliminated - make its own function
-        if (get_time_remaining(get_active_player(g)).tv_sec < 0) {
-            game_over(g); // have a different function for pause vs game over
+        if (is_eliminated(get_active_player(g))) {
+            game_over(g);
         }
 
         // sleep
@@ -144,11 +144,12 @@ static void stand_by() {
 
 static void format_time(char *time_str, int len, Game *g, int id) {
     struct timespec time_remaining = get_time_remaining(get_player(g, id));
+    long h = time_remaining.tv_sec / 3600;
+    long m = (time_remaining.tv_sec % 3600) / 60;
     long s = time_remaining.tv_sec % 60;
-    long m = time_remaining.tv_sec / 60;
     long t = time_remaining.tv_nsec / 100000000; 
 
-    snprintf(time_str, len, "%02ld:%02ld.%ld", m, s, t);
+    snprintf(time_str, len, "%02ld:%02ld:%02ld.%ld", h, m, s, t);
 }
 
 // ************************************************************************************
@@ -228,8 +229,7 @@ static void end_turn(Game *g) {
 
 /* Stops current game and allows user to perform other commands. */
 static void stop_game(Game *g) {
-    clear();
-    printw("Play again?\n");
+    printw(" (Game stopped) Play again?\n");
     refresh();
     nodelay(stdscr, FALSE);
     int listening = 1;
@@ -291,22 +291,21 @@ static void update(Game *g) {
     set_time_remaining(get_active_player(g), time_remaining);
 
     // update clock
-    char p1_time_str[9];
-    char p2_time_str[9];
+    char p1_time_str[12];
+    char p2_time_str[12];
     format_time(p1_time_str, sizeof(p1_time_str), g, 1);
     format_time(p2_time_str, sizeof(p2_time_str), g, 2);
-    printw("\rPlayer 1: %s | Player 2: %s", p1_time_str, p2_time_str);
+    printw("\r%s: %s | %s: %s", get_name(get_player(g, 1)), p1_time_str, get_name(get_player(g, 2)), p2_time_str);
     refresh();
 }
-
 // ************************************************************************************
 // ----- Acessing players -------------------------------------------------------------
 // ************************************************************************************
 
 /* Initialize players with the game duration. */
 static void initialize_players(Game *g) {
-    Player *p1 = create_player(get_duration(g) * 60); // seconds
-    Player *p2 = create_player(get_duration(g) * 60);
+    Player *p1 = create_player(get_duration(g) * 60, 1, NULL); // seconds
+    Player *p2 = create_player(get_duration(g) * 60, 2, NULL);
     g->p1 = p1;
     g->p2 = p2;
 }
@@ -348,4 +347,3 @@ static Player *get_player(Game *g, int id) {
 static Player *get_active_player(Game *g) {
     return get_player(g, g->active_pid);
 }
-

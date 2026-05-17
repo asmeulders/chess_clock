@@ -12,6 +12,7 @@
 
 /* TODO:
 - input validation for time
+- allow for decimals?
 - better print statements
 - make unknown command a separate function
 */

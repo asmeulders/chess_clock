@@ -167,8 +167,24 @@ static void select_rapid(int *minutes, int *seconds) {
 }
 
 static void input_custom(int *minutes, int *seconds) {
-    *minutes = get_int("Enter minutes per player: ");
-    *seconds = get_int("Enter seconds added per turn: ");
+    int listening = 2;
+    while (listening > 0) {
+        if (listening == 2) {
+            *minutes = get_int("Enter minutes per player: ");
+            if (*minutes > 0)
+                listening = 1;
+            else 
+                printw("Input a positive number");
+            refresh();
+        } else if (listening == 1) {
+            *seconds = get_int("Enter seconds added per turn: ");
+            if (*seconds >= 0)
+                listening = 0;
+            else 
+                printw("Input a positive number");
+            refresh();
+        }
+    }
 }
 
 static int get_int(const char *prompt) {

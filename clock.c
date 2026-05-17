@@ -42,11 +42,32 @@ TimeControls *get_time_controls(Clock *c) {
 
 /* Updates the clock turn end based on time remaining. */
 void calculate_turn_end(Clock *c, struct timespec time_remaining) {
-    clock_gettime(CLOCK_MONOTONIC, &c->turn_end); // get current time
-    c->turn_end.tv_sec += time_remaining.tv_sec;
-    c->turn_end.tv_nsec += time_remaining.tv_nsec;
-    if (c->turn_end.tv_nsec > 1000000000) {
-        c->turn_end.tv_nsec -= 1000000000;
-        c->turn_end.tv_sec += 1;
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    c->turn_end = add_timespec(now, time_remaining);
+}
+
+
+struct timespec add_timespec(struct timespec ts1, struct timespec ts2) {
+    struct timespec result;
+    long sec = ts1.tv_sec + ts2.tv_sec;
+    long nsec = ts1.tv_nsec + ts2.tv_nsec;
+    if (nsec > 1000000000) {
+        sec++;
+        nsec -= 1000000000;
     }
+    result.tv_sec = sec; result.tv_nsec = nsec;
+    return result;
+}
+
+struct timespec subtract_timespec(struct timespec ts1, struct timespec ts2) {
+    struct timespec result;
+    long sec = ts1.tv_sec - ts2.tv_sec;
+    long nsec = ts1.tv_nsec - ts2.tv_nsec;
+    if (nsec < 0) {
+        sec--;
+        nsec += 1000000000;
+    }
+    result.tv_sec = sec; result.tv_nsec = nsec;
+    return result;
 }

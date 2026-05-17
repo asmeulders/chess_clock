@@ -14,5 +14,7 @@ void destroy_clock(Clock *c);
 struct timespec get_turn_end(Clock *c);
 TimeControls *get_time_controls(Clock *c);
 void calculate_turn_end(Clock *c, struct timespec time_remaining);
+struct timespec add_timespec(struct timespec ts1, struct timespec ts2);
+struct timespec subtract_timespec(struct timespec ts1, struct timespec ts2);
 
 #endif

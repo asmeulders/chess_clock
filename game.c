@@ -208,9 +208,9 @@ static void end_turn(Game *g) {
         } else {
             p = p2;
         }
-        struct timespec time = get_time_remaining(p);
-        time.tv_sec = time.tv_sec + get_seconds(get_time_controls(g->clock));
-        set_time_remaining(p, time);
+        struct timespec time_remaining = get_time_remaining(p);
+        time_remaining.tv_sec += get_seconds(get_time_controls(g->clock));
+        set_time_remaining(p, time_remaining);
     }
 
     // Change active players
@@ -226,6 +226,7 @@ static void end_turn(Game *g) {
     calculate_turn_end(g->clock, get_time_remaining(get_active_player(g)));
 }
 
+/* Stops current game and allows user to perform other commands. */
 static void stop_game(Game *g) {
     clear();
     printw("Play again?\n");
@@ -286,14 +287,7 @@ static void new_game(Game *g) {
 static void update(Game *g) {
     struct timespec now;
     clock_gettime(CLOCK_MONOTONIC, &now);
-    // do calculations - could make another function here to add and subtract timespecs TODO
-    long remaining_sec = get_turn_end(g->clock).tv_sec - now.tv_sec;
-    long remaining_nsec = get_turn_end(g->clock).tv_nsec - now.tv_nsec;
-    if (remaining_nsec < 0) {
-        remaining_sec -= 1;
-        remaining_nsec += 1000000000;
-    }
-    struct timespec time_remaining = { remaining_sec, remaining_nsec };
+    struct timespec time_remaining = subtract_timespec(get_turn_end(g->clock), now);
     set_time_remaining(get_active_player(g), time_remaining);
 
     // update clock

@@ -13,11 +13,8 @@
 /* TODO:
 - input validation for time
 - input player names
-- preset times:
-    - blitz: 1|0, 2|1
-    - bullet: 3|0, 3|2, 5|0, 5|5
-    - rapid: 10|0, 15|10, 30|0, 10|5, 20|0, 60|0
 - better print statements
+- make unknown command a separate function
 */
 
 void user_begin();
@@ -37,7 +34,7 @@ int main()
 }
 
 void user_begin() {
-    printw("Enter 's' to begin, 'q' to quit: \n");
+    printw("Enter 's' to begin, 'q' to quit\n");
     refresh();
     bool listening = true;
     int unknown_count = 0;
@@ -47,6 +44,10 @@ void user_begin() {
         {
         case 's':
             TimeControls *tc = input_time_controls();
+            if (tc == NULL) {
+                listening = false;
+                break;
+            }
             Clock *cl = create_clock(tc);
             Game *g = create_game(cl);
             listening = false;

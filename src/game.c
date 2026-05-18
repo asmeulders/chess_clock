@@ -12,11 +12,11 @@
 #include <string.h>
 
 // Project Imports
-#include "player.h"
-#include "game.h"
-#include "clock.h"
-#include "time_controls.h"
-#include "utils.h"
+#include "../include/player.h"
+#include "../include/game.h"
+#include "../include/clock.h"
+#include "../include/time_controls.h"
+#include "../include/utils.h"
 
 // ************************************************************************************
 // ----- Static Variables -------------------------------------------------------------
@@ -36,7 +36,7 @@ static void end_turn(Game *g);
 static void stop_game(Game *g);
 static void exit_game(Game *g);
 static void game_over(Game *g);
-static void new_game(Game *g);
+static int new_game(Game *g);
 static void restart_game(Game *g);
 static void update(Game *g);
 static void initialize_players(Game *g);
@@ -236,13 +236,19 @@ static void stop_game(Game *g) {
     refresh();
     nodelay(stdscr, FALSE);
     int listening = 1;
+    int new_game_fail = 0;
     int unknown_count = 0;
 
     while (listening) {
+        if (new_game_fail) {
+            clear();
+            printw("Play again?\n");
+            refresh();
+        }
         int input = getch();
         switch (input) {
             case 'r': listening = 0; restart_game(g); break; // restart game
-            case 'n': listening = 0; new_game(g); break; // new game
+            case 'n': new_game_fail = new_game(g); listening = new_game_fail; break; // new game
             case 'm': customize_player_names(g); break; // customize player names
             case 'q': listening = 0; exit_game(g); break; // exit
             default: unknown_command(&unknown_count); break; // unknown command
@@ -276,11 +282,11 @@ static void restart_game(Game *g) {
 }
 
 /* Make a new game by updating time controls and clock in game struct. */
-static void new_game(Game *g) {
+static int new_game(Game *g) {
     printw("Making new game...\n");
     TimeControls *tc = input_time_controls();
     if (tc == NULL) 
-        return;
+        return EXIT_FAILURE;
     destroy_clock(g->clock);
     Clock *cl = create_clock(tc);
     g->clock = cl;
@@ -288,6 +294,7 @@ static void new_game(Game *g) {
     
     stand_by();
     start_game(g);
+    return EXIT_SUCCESS;
 }
 
 /* Update the timer display and sets the time remaining for a player. */

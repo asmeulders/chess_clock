@@ -5,14 +5,12 @@
 #include <stdlib.h>
 
 // Project Imports
-#include "game.h"
-#include "clock.h"
-#include "time_controls.h"
-#include "utils.h"
+#include "../include/game.h"
+#include "../include/clock.h"
+#include "../include/time_controls.h"
+#include "../include/utils.h"
 
 /* TODO:
-- handle the null on input time controls better
-- segfault on choosing game type and hitting q
 - add menus for commands to use in certain areas
 - file organization
 - readme

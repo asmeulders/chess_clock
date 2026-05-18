@@ -8,9 +8,9 @@
 #include <ncurses.h>
 
 // Project Imports
-#include "player.h"
-#include "game.h"
-#include "utils.h"
+#include "../include/player.h"
+#include "../include/game.h"
+#include "../include/utils.h"
 
 // ************************************************************************************
 // ----- Static Declarations ----------------------------------------------------------

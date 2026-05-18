@@ -6,8 +6,8 @@
 #include <ctype.h>
 
 // Project Imports
-#include "time_controls.h"
-#include "utils.h"
+#include "../include/time_controls.h"
+#include "../include/utils.h"
 
 // ************************************************************************************
 // ----- Static Declarations ----------------------------------------------------------

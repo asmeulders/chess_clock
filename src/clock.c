@@ -5,8 +5,8 @@
 #include <stdlib.h>
 
 // Project Imports
-#include "clock.h"
-#include "time_controls.h"
+#include "../include/clock.h"
+#include "../include/time_controls.h"
 
 // ************************************************************************************
 // ----- Clock Struct -----------------------------------------------------------------

@@ -10,6 +10,7 @@
 // Project Imports
 #include "player.h"
 #include "game.h"
+#include "utils.h"
 
 // ************************************************************************************
 // ----- Static Declarations ----------------------------------------------------------
@@ -99,21 +100,23 @@ static void input_player_name(Player *p, int id) {
 void customize_player_names(Game *g) {
     clear();
     refresh();
-    printw("Customize player names? (y/n): ");
+    printw("Customize player names? (y/n)\n");
     int ch;
-    echo();
-    curs_set(1);
-    ch = getch();
-    noecho();
-    curs_set(0);
+    int unknown_count = 0;
+    while (1) {
+        ch = getch();
+        switch (ch) {
+        case 'y': 
+            clear();
+            refresh();
+            for (int i = 1; i <= 2; i++)
+                input_player_name(get_player(g, i), i); 
+            return;
+        case 'n': return;
+        default: unknown_command(&unknown_count); break;
+        }
+    }
 
-    // Skip and have defaults
-    if (ch == 'n')
-        return;
-
-    clear();
-    refresh();
-    for (int i = 1; i <= 2; i++)
-        input_player_name(get_player(g, i), i);
+    
 
 }

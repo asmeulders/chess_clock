@@ -13,11 +13,11 @@
 // ----- Static Declarations ----------------------------------------------------------
 // ************************************************************************************
 
-static int get_int(const char *promt);
-static void select_bullet(int *minutes, int *seconds);
-static void select_blitz(int *minutes, int *seconds);
-static void select_rapid(int *minutes, int *seconds);
-static void input_custom(int *minutes, int *seconds);
+static int get_int(const char *promt, int *out);
+static int select_bullet(int *minutes, int *seconds);
+static int select_blitz(int *minutes, int *seconds);
+static int select_rapid(int *minutes, int *seconds);
+static int input_custom(int *minutes, int *seconds);
 
 // ************************************************************************************
 // ----- Time Controls Struct ---------------------------------------------------------
@@ -61,134 +61,164 @@ void set_seconds(TimeControls *tc, int seconds) {
 
 TimeControls *input_time_controls() {
     clear();
-    refresh();
-    printw("Please choose a game type!\nBullet (b) -> 1|0, 2|1\nBlitz (z) -> 3|0, 3|2, 5|0, 5|5\nRapid (r) -> 10|0, 10|5, 15|10, 20|0, 30|0, 60|0\nCustom (c) -> Enter your own values X|X\nInput: ");
-    refresh();
-    char response[8];
+    int input;
     int listening = 1;
+    int needs_redraw = 1;
     int unknown_count = 0;
-    int minutes;
-    int seconds;
-
-    echo();
-    curs_set(1);
+    int minutes, seconds;
     while (listening) {
-        wgetnstr(stdscr, response, sizeof(response));
-        for (int i = 0; response[i]; i++) 
-            response[i] = tolower(response[i]);
-
-        if (strcmp(response, "bullet") == 0 || strcmp(response, "b") == 0) {
-            select_bullet(&minutes, &seconds);
-            listening = false;
-        } else if (strcmp(response, "blitz") == 0 || strcmp(response, "z") == 0) {
-            select_blitz(&minutes, &seconds);
-            listening = false;
-        } else if (strcmp(response, "rapid") == 0 || strcmp(response, "r") == 0) {
-            select_rapid(&minutes, &seconds);
-            listening = false;
-        } else if (strcmp(response, "custom") == 0 || strcmp(response, "c") == 0) {
-            input_custom(&minutes, &seconds);
-            listening = false;
-        } else if (strcmp(response, "quit") == 0 || strcmp(response, "q") == 0) {
-            printw("Quitting\n");
+        if (needs_redraw) {
+            wmove(stdscr, 0, 0);
+            wclrtobot(stdscr);
+            printw("Please choose a game type!\nBullet (b) -> 1|0, 2|1\nBlitz  (z) -> 3|0, 3|2, 5|0, 5|5\nRapid  (r) -> 10|0, 10|5, 15|10, 20|0, 30|0, 60|0\nCustom (c) -> Enter your own values X|X\n");
             refresh();
-            listening = false;
-            return NULL;
-        } else {
-            unknown_command(&unknown_count);
+            needs_redraw = 0;
+        }
+        input = getch();
+        switch (input) {
+            case 'b': listening = select_bullet(&minutes, &seconds); needs_redraw = 1; break;
+            case 'z': listening = select_blitz(&minutes, &seconds); needs_redraw = 1; break;
+            case 'r': listening = select_rapid(&minutes, &seconds); needs_redraw = 1; break;
+            case 'c': listening = input_custom(&minutes, &seconds); needs_redraw = 1; break;
+            case 'q': return NULL;
+            default:
+                unknown_command(&unknown_count);
+                refresh();
+                break;
         }
     }
     TimeControls *tc = make_time_controls(minutes, seconds);
     return tc;
 }
 
-static void select_bullet(int *minutes, int *seconds) {
+static int select_bullet(int *minutes, int *seconds) {
     int listening = 1;
     int unknown_count = 0;
     int input;
-    while (listening) {
-        input = get_int("Select Time Controls: Bullet\n1. 1|0\n2. 2|1\nInput: ");
-        switch (input) {
-            case 1: *minutes = 1; *seconds = 0; listening = 0; break;
-            case 2: *minutes = 2; *seconds = 1; listening = 0; break; 
-            default: unknown_command(&unknown_count); break;
-        }
-    }
-    
-}
-
-static void select_blitz(int *minutes, int *seconds) {
-    int listening = 1;
-    int unknown_count = 0;
-    int input;
-    while (listening) {
-        input = get_int("Select Time Controls: Blitz\n1. 3|0\n2. 3|2\n3. 5|0\n4. 5|5\nInput: ");
-        switch (input) {
-            case 1: *minutes = 3; *seconds = 0; listening = 0; break;
-            case 2: *minutes = 3; *seconds = 2; listening = 0; break; 
-            case 3: *minutes = 5; *seconds = 0; listening = 0; break;
-            case 4: *minutes = 5; *seconds = 5; listening = 0; break; 
-            default: unknown_command(&unknown_count); break;
-        }
-    }
-}
-
-static void select_rapid(int *minutes, int *seconds) {
-    int listening = 1;
-    int unknown_count = 0;
-    int input;
-    while (listening) {
-        input = get_int("Select Time Controls: Rapid\n1. 10|0\n2. 10|5\n3. 15|10\n4. 20|0\n5. 30|0\n6. 60|0\nInput: ");
-        switch (input) {
-            case 1: *minutes = 10; *seconds = 0; listening = 0; break;
-            case 2: *minutes = 10; *seconds = 5; listening = 0; break; 
-            case 3: *minutes = 15; *seconds = 10; listening = 0; break;
-            case 4: *minutes = 20; *seconds = 0; listening = 0; break; 
-            case 5: *minutes = 30; *seconds = 0; listening = 0; break;
-            case 6: *minutes = 60; *seconds = 0; listening = 0; break;
-            default: unknown_command(&unknown_count); break;
-        }
-    }
-}
-
-static void input_custom(int *minutes, int *seconds) {
     int y, x;
+    clear();
+    printw("Select Time Controls: Bullet\n1. 1|0\n2. 2|1");
+    refresh();
     getyx(stdscr, y, x);
+    while (listening) {
+        input = getch();
+        switch (input) {
+            case '1': *minutes = 1; *seconds = 0; listening = 0; break;
+            case '2': *minutes = 2; *seconds = 1; listening = 0; break; 
+            case 'b': wclrtobot(stdscr); return EXIT_FAILURE;
+            default: 
+                wmove(stdscr, y+1, 0); 
+                unknown_command(&unknown_count); 
+                wmove(stdscr, y, x); 
+                wclrtoeol(stdscr); 
+                break;
+        }
+    }
+    return EXIT_SUCCESS;
+}
+
+static int select_blitz(int *minutes, int *seconds) {
+    int listening = 1;
+    int unknown_count = 0;
+    int input;
+    int y, x;
+    clear();
+    printw("Select Time Controls: Blitz\n1. 3|0\n2. 3|2\n3. 5|0\n4. 5|5");
+    refresh();
+    getyx(stdscr, y, x);
+    while (listening) {
+        input = getch();
+        switch (input) {
+            case '1': *minutes = 3; *seconds = 0; listening = 0; break;
+            case '2': *minutes = 3; *seconds = 2; listening = 0; break; 
+            case '3': *minutes = 5; *seconds = 0; listening = 0; break;
+            case '4': *minutes = 5; *seconds = 5; listening = 0; break; 
+            case 'b': return EXIT_FAILURE;
+            default: 
+                wmove(stdscr, y+1, 0); 
+                unknown_command(&unknown_count); 
+                wmove(stdscr, y, x); 
+                wclrtoeol(stdscr); break;
+        }
+    }
+    return EXIT_SUCCESS;
+}
+
+static int select_rapid(int *minutes, int *seconds) {
+    int listening = 1;
+    int unknown_count = 0;
+    int input;
+    int y, x;
+    clear();
+    printw("Select Time Controls: Rapid\n1. 10|0\n2. 10|5\n3. 15|10\n4. 20|0\n5. 30|0\n6. 60|0");
+    refresh();
+    getyx(stdscr, y, x);
+    while (listening) {
+        input = getch();
+        switch (input) {
+            case '1': *minutes = 10; *seconds = 0; listening = 0; break;
+            case '2': *minutes = 10; *seconds = 5; listening = 0; break; 
+            case '3': *minutes = 15; *seconds = 10; listening = 0; break;
+            case '4': *minutes = 20; *seconds = 0; listening = 0; break; 
+            case '5': *minutes = 30; *seconds = 0; listening = 0; break;
+            case '6': *minutes = 60; *seconds = 0; listening = 0; break;
+            case 'b': return EXIT_FAILURE;
+            default: 
+                wmove(stdscr, y+1, 0); 
+                unknown_command(&unknown_count); 
+                wmove(stdscr, y, x); 
+                wclrtoeol(stdscr); 
+                break;
+        }
+    }
+    return EXIT_SUCCESS;
+}
+
+static int input_custom(int *minutes, int *seconds) {
+    clear();
+    printw("Enter custom time controls...\n");
+    refresh();
 
     // minutes
     while (1) {
-        wmove(stdscr, y, x);
+        wmove(stdscr, 1, 0);
         wclrtoeol(stdscr);
-        *minutes = get_int("Enter minutes per player: ");
-        if (*minutes > 0) break;
-        wmove(stdscr, y+1, 0);
+
+        if (get_int("Enter minutes per player: ", minutes)) 
+            return EXIT_FAILURE;
+
+        if (*minutes > 0) 
+            break;
+
+        wmove(stdscr, 2, 0);
         printw("Must be positive.");
-        wmove(stdscr, y, 0);
+        wmove(stdscr, 1, 0);
+        refresh();
     }
 
     // seconds
-    wmove(stdscr, y+1, 0);
+    wmove(stdscr, 2, 0);
     wclrtoeol(stdscr);
     while (1) {
-        wmove(stdscr, y+1, 0);
+        wmove(stdscr, 2, 0);
         wclrtoeol(stdscr);
-        *seconds = get_int("Enter seconds added per turn: ");
-        if (*seconds >= 0) break;
-        wmove(stdscr, y+2, 0);
+
+        if (get_int("Enter seconds added per turn: ", seconds)) 
+            return EXIT_FAILURE;
+
+        if (*seconds >= 0) 
+            break;
+
+        wmove(stdscr, 3, 0);
         printw("Must be positive.");
-        wmove(stdscr, y+1, 0);
-
+        wmove(stdscr, 2, 0);
+        refresh();
     }
-
-    wmove(stdscr, y+2, 0);
-    wclrtoeol(stdscr);
-    refresh();
+    return EXIT_SUCCESS;
 }
 
-static int get_int(const char *prompt) {
+static int get_int(const char *prompt, int *out) {
     char buf[32];
-    int n = 0;
-
     printw("%s", prompt);
     refresh();
 
@@ -198,7 +228,12 @@ static int get_int(const char *prompt) {
     noecho();
     curs_set(0);
 
+    if (strcmp(buf, "q") == 0 || strcmp(buf, "Q") == 0 || strcmp(buf, "quit") == 0 || strcmp(buf, "Quit") == 0) {
+        return 1;
+    }
+
     if (strlen(buf) > 0)
-        n = atoi(buf);
-    return n;
+        *out = atoi(buf);
+
+    return 0;
 }

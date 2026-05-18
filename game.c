@@ -102,6 +102,7 @@ Commands:
 void start_game_loop(Game *g) { 
     stand_by();
     start_game(g);
+    int unknown_count = 0;
     while (g->running && g->paused == 0) {
         int input = getch();
         switch (input) {
@@ -109,7 +110,7 @@ void start_game_loop(Game *g) {
             case 'e': stop_game(g); break;
             case ' ': end_turn(g); break; 
             case 'r': restart_game(g); break;
-            default: break;
+            default: unknown_command(&unknown_count); break;
         }
         
         if (g->active_pid == 0) {
@@ -278,6 +279,8 @@ static void restart_game(Game *g) {
 static void new_game(Game *g) {
     printw("Making new game...\n");
     TimeControls *tc = input_time_controls();
+    if (tc == NULL) 
+        return;
     destroy_clock(g->clock);
     Clock *cl = create_clock(tc);
     g->clock = cl;

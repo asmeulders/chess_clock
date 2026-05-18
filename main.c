@@ -11,9 +11,11 @@
 #include "utils.h"
 
 /* TODO:
-- move cursor back on game type and time control selection
-- add unknown command while game is running
+- handle the null on input time controls better
+- segfault on choosing game type and hitting q
 - add menus for commands to use in certain areas
+- file organization
+- readme
 */
 
 void user_begin();
